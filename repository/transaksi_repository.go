@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 )
 
 type RepositoryTranskasi interface {
@@ -224,14 +225,14 @@ func (r *repositoryTransaksi) CreateTx(tx *sql.Tx, t *models.Transaksi) (int64, 
 		INSERT INTO transaksi (nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, id_member, id_cabang, status, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, t.CreatedAt)
+	now := time.Now()
+	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, now)
 	if err != nil {
 		return 0, err
 	}
 	return result.LastInsertId()
 }
 
-// Get by ID
 func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 	var status sql.NullInt64
 	query := `
@@ -268,7 +269,6 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 	return t, nil
 }
 
-// GetAll
 func (r *repositoryTransaksi) GetAll() ([]*models.Transaksi, error) {
 	query := `
 		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at

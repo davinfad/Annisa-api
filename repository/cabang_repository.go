@@ -3,6 +3,7 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
+	"time"
 )
 
 type RepositoryCabang interface {
@@ -21,7 +22,8 @@ func NewCabangRepository(db *sql.DB) *cabangRepository {
 
 func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error) {
 	query := "INSERT INTO cabang (id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	result, err := r.db.Exec(query, cabang.IDCabang, cabang.NamaCabang, cabang.KodeCabang, cabang.JamBuka, cabang.JamTutup, cabang.CreatedAt, cabang.UpdatedAt)
+	now := time.Now()
+	result, err := r.db.Exec(query, cabang.IDCabang, cabang.NamaCabang, cabang.KodeCabang, cabang.JamBuka, cabang.JamTutup, now, now)
 	if err != nil {
 		return cabang, err
 	}
@@ -43,7 +45,7 @@ func (r *cabangRepository) GetByID(ID int) (*models.Cabang, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Not found
+			return nil, nil
 		}
 		return nil, err
 	}

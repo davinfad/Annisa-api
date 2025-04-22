@@ -21,7 +21,6 @@ func InitDb() (*sql.DB, error) {
 	dbPort := os.Getenv("MYSQLPORT")
 	dbName := os.Getenv("MYSQLDATABASE")
 
-	// Gunakan nilai variabel lingkungan untuk koneksi database
 	dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local&multiStatements=true"
 
 	db, err := sql.Open("mysql", dsn)

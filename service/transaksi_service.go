@@ -43,7 +43,6 @@ func (s *serviceTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang int
 	return s.repositoryTransaksi.GetTotalMoneyByMonthAndYear(month, year, idCabang)
 }
 
-// Get transaksi by ID
 func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 	get, err := s.repositoryTransaksi.Get(id)
 	if err != nil {
@@ -55,7 +54,6 @@ func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 	return get, nil
 }
 
-// Get by date & cabang
 func (s *serviceTransaksi) GetTransaksiByDateAndCabang(date string, idCabang int) ([]*models.Transaksi, error) {
 	get, err := s.repositoryTransaksi.GetByDateAndCabang(date, idCabang)
 	if err != nil {
@@ -67,7 +65,6 @@ func (s *serviceTransaksi) GetTransaksiByDateAndCabang(date string, idCabang int
 	return get, nil
 }
 
-// Get monthly by cabang
 func (s *serviceTransaksi) GetMonthlyTransaksiByCabang(month, year, idCabang int) ([]*models.Transaksi, error) {
 	get, err := s.repositoryTransaksi.GetMonthlyByCabang(month, year, idCabang)
 	if err != nil {
@@ -79,7 +76,6 @@ func (s *serviceTransaksi) GetMonthlyTransaksiByCabang(month, year, idCabang int
 	return get, nil
 }
 
-// Get draft by cabang
 func (s *serviceTransaksi) GetDraftTransaksiByCabang(idCabang int) ([]*models.Transaksi, error) {
 	get, err := s.repositoryTransaksi.GetDraftByCabang(idCabang)
 	if err != nil {
@@ -111,7 +107,6 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	// Cek null dan dereference trx.Status
 	if trx.Status == nil {
 		return fmt.Errorf("status is nil")
 	}
@@ -169,29 +164,6 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 
 	return s.repositoryTransaksi.DeleteTx(tx, idTransaksi)
 }
-
-// func deleteTransaksiItemsAndTransaksi(tx *sql.Tx, idTransaksi int) error {
-// 	_, err := tx.Exec(`DELETE FROM item_transaksi WHERE id_transaksi = ?`, idTransaksi)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to delete item_transaksi: %w", err)
-// 	}
-
-// 	res, err := tx.Exec(`DELETE FROM transaksi WHERE id_transaksi = ?`, idTransaksi)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to delete transaksi: %w", err)
-// 	}
-
-// 	affected, err := res.RowsAffected()
-// 	if err != nil {
-// 		return fmt.Errorf("failed to get affected rows: %w", err)
-// 	}
-
-// 	if affected == 0 {
-// 		return fmt.Errorf("transaction not found")
-// 	}
-
-// 	return nil
-// }
 
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
 	transaksiReq := req.(models.TransaksiRequest)

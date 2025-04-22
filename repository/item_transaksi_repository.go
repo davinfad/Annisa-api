@@ -3,6 +3,7 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
+	"time"
 )
 
 type RepositoryItemTransaksi interface {
@@ -50,8 +51,10 @@ func (r *repositoryItemTransaksi) CreateBulkTx(tx *sql.Tx, items []models.ItemTr
 	}
 	defer stmt.Close()
 
+	now := time.Now()
+
 	for _, item := range items {
-		_, err := stmt.Exec(item.IDTransaksi, item.IDLayanan, item.Catatan, item.Harga, item.IDKaryawan, item.CreatedAt)
+		_, err := stmt.Exec(item.IDTransaksi, item.IDLayanan, item.Catatan, item.Harga, item.IDKaryawan, now)
 		if err != nil {
 			return err
 		}

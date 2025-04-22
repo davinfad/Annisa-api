@@ -4,12 +4,12 @@ import "time"
 
 type Transaksi struct {
 	IDTransaksi      int       `json:"id_transaksi"`
-	IDCabang         *int      `json:"id_cabang"`         //
-	IDMember         *int      `json:"id_member"`         //
-	NamaPelanggan    string    `json:"nama_pelanggan"`    //
-	NomorTelepon     string    `json:"nomor_telepon"`     //
-	TotalHarga       float64   `json:"total_harga"`       //
-	MetodePembayaran string    `json:"metode_pembayaran"` //
+	IDCabang         *int      `json:"id_cabang"`
+	IDMember         *int      `json:"id_member"`
+	NamaPelanggan    string    `json:"nama_pelanggan"`
+	NomorTelepon     string    `json:"nomor_telepon"`
+	TotalHarga       float64   `json:"total_harga"`
+	MetodePembayaran string    `json:"metode_pembayaran"`
 	Status           *int      `json:"status"`
 	CreatedAt        time.Time `json:"created_at"`
 }

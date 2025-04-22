@@ -3,6 +3,7 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
+	"time"
 )
 
 type RepositoryUser interface {
@@ -24,13 +25,15 @@ func (r *userRepository) Create(user *models.User) (*models.User, error) {
 		VALUES (?, ?, ?, ?, ?)
 	`
 
+	now := time.Now()
+
 	_, err := r.db.Exec(
 		query,
 		user.Username,
 		user.Password,
 		user.IDCabang,
-		user.CreatedAt,
-		user.UpdatedAt,
+		now,
+		now,
 	)
 
 	return user, err

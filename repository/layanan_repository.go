@@ -37,13 +37,15 @@ func (r *repositoryLayanan) Create(layanan *models.Layanan) (*models.Layanan, er
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
+	now := time.Now()
+
 	result, err := r.db.Exec(query,
 		layanan.NamaLayanan,
 		layanan.PersenKomisi,
 		layanan.PersenKomisiLuarJam,
 		layanan.Kategori,
-		layanan.CreatedAt,
-		layanan.UpdatedAt,
+		now,
+		now,
 	)
 	if err != nil {
 		return nil, err
@@ -71,7 +73,7 @@ func (r *repositoryLayanan) GetByID(ID int) (*models.Layanan, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Not found
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -138,13 +140,12 @@ func (r *repositoryLayanan) Update(l *models.Layanan) (*models.Layanan, error) {
 }
 
 func (r *repositoryLayanan) Delete(ID int) (*models.Layanan, error) {
-	// Get data before delete (for return)
 	l, err := r.GetByID(ID)
 	if err != nil {
 		return nil, err
 	}
 	if l == nil {
-		return nil, nil // Not found
+		return nil, nil
 	}
 
 	query := `DELETE FROM layanan WHERE id_layanan = ?`

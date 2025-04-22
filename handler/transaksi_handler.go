@@ -88,7 +88,6 @@ func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// GetTransaksiByDateAndCabang godoc
 func (h *HandlerTransaksi) GetTransaksiByDateAndCabang(c *gin.Context) {
 	date := c.Param("date")
 	idCabang := toInt(c.Param("id_cabang"))
@@ -103,7 +102,6 @@ func (h *HandlerTransaksi) GetTransaksiByDateAndCabang(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// GetMonthlyTransaksiByCabang godoc
 func (h *HandlerTransaksi) GetMonthlyTransaksiByCabang(c *gin.Context) {
 	month := toInt(c.Param("month"))
 	year := toInt(c.Param("year"))
@@ -119,7 +117,6 @@ func (h *HandlerTransaksi) GetMonthlyTransaksiByCabang(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// GetDraftTransaksiByCabang godoc
 func (h *HandlerTransaksi) GetDraftTransaksiByCabang(c *gin.Context) {
 	idCabang := toInt(c.Param("id_cabang"))
 
@@ -136,7 +133,6 @@ func (h *HandlerTransaksi) GetDraftTransaksiByCabang(c *gin.Context) {
 func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 	var req models.TransaksiRequest
 
-	// Validasi body JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response := helper.APIresponse(http.StatusBadRequest, err.Error())
 		c.JSON(http.StatusBadRequest, response)
@@ -153,7 +149,6 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		status = 1
 	}
 
-	// Mulai transaksi database
 	tx, err := h.DB.Begin()
 	if err != nil {
 		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
@@ -161,7 +156,6 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		return
 	}
 
-	// Panggil service untuk membuat transaksi
 	transaksi, err := h.Service.CreateTransaksi(tx, req, status)
 	if err != nil {
 		tx.Rollback()
@@ -170,7 +164,6 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		return
 	}
 
-	// Jika bukan draft, update komisi
 	if status == 0 {
 		err := h.Service.UpdateKomisiKaryawan(tx, req.Items, transaksi.CreatedAt, transaksi.IDCabang)
 		if err != nil {
@@ -181,7 +174,6 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		}
 	}
 
-	// Commit transaksi DB
 	if err := tx.Commit(); err != nil {
 		tx.Rollback()
 		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
