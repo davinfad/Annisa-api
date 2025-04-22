@@ -41,7 +41,7 @@ func StartApp() {
 	cabangService := service.NewCabangService(cabangRepository)
 	cabangHandler := NewCabangHandler(cabangService)
 
-	cabang := router.Group("api/cabang")
+	cabang := router.Group("/cabang")
 	cabang.POST("/", middleware.AuthMiddleware(authService, userService), cabangHandler.Create)
 
 	karyawanRepository := repository.NewKaryawanRepository(db)
@@ -49,7 +49,7 @@ func StartApp() {
 	karyawanService.StartCommissionScheduler()
 	karyawanHandler := NewKaryawanHandler(karyawanService)
 
-	karyawan := router.Group("karyawan")
+	karyawan := router.Group("/karyawan")
 	karyawan.POST("/", middleware.AuthMiddleware(authService, userService), karyawanHandler.Create)
 	karyawan.PUT("/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.Update)
 	karyawan.GET("/id/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.GetByID)
@@ -60,7 +60,7 @@ func StartApp() {
 	memberService := service.NewMemberService(memberRepository)
 	memberHandler := NewMemberHandler(memberService)
 
-	member := router.Group("member")
+	member := router.Group("/member")
 	member.POST("/", middleware.AuthMiddleware(authService, userService), memberHandler.Create)
 	member.PUT("/:id", middleware.AuthMiddleware(authService, userService), memberHandler.Update)
 	member.GET("/:id", middleware.AuthMiddleware(authService, userService), memberHandler.GetByID)
@@ -72,7 +72,7 @@ func StartApp() {
 	layananService := service.NewLayananService(layananRepository)
 	layananHandler := NewLayananHandler(layananService)
 
-	layanan := router.Group("layanan")
+	layanan := router.Group("/layanan")
 	layanan.POST("/", middleware.AuthMiddleware(authService, userService), layananHandler.Create)
 	layanan.PUT("/:id", middleware.AuthMiddleware(authService, userService), layananHandler.Update)
 	layanan.GET("/:id", middleware.AuthMiddleware(authService, userService), layananHandler.GetByID)
