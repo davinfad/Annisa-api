@@ -3,10 +3,26 @@ package database
 import (
 	"database/sql"
 	"log"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func InitDb() (*sql.DB, error) {
-	dsn := "root:@tcp(127.0.0.1:3306)/annisa-api?charset=utf8mb4&parseTime=True&loc=Local"
+	if _, exists := os.LookupEnv("RAILWAY_ENVIRONMENT"); exists == false {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("error loading .env file:", err)
+		}
+	}
+
+	user := os.Getenv("MYSQLUSER")
+	pass := os.Getenv("MYSQLPASSWORD")
+	host := os.Getenv("MYSQLHOST")
+	port := os.Getenv("MYSQLPORT")
+	dbname := os.Getenv("MYSQLDATABASE")
+
+	dsn := user + ":" + pass + "@tcp(" + host + ":" + port + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
+
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err)
