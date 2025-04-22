@@ -15,13 +15,14 @@ func InitDb() (*sql.DB, error) {
 		}
 	}
 
-	user := os.Getenv("MYSQLUSER")
-	pass := os.Getenv("MYSQLPASSWORD")
-	host := os.Getenv("MYSQLHOST")
-	port := os.Getenv("MYSQLPORT")
-	dbname := os.Getenv("MYSQLDATABASE")
+	dbUsername := os.Getenv("MYSQLUSER")
+	dbPassword := os.Getenv("MYSQLPASSWORD")
+	dbHost := os.Getenv("MYSQLHOST")
+	dbPort := os.Getenv("MYSQLPORT")
+	dbName := os.Getenv("MYSQLDATABASE")
 
-	dsn := user + ":" + pass + "@tcp(" + host + ":" + port + ")/" + dbname + "?charset=utf8mb4&parseTime=True&loc=Local"
+	// Gunakan nilai variabel lingkungan untuk koneksi database
+	dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local"
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
