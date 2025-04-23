@@ -168,13 +168,9 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
 	transaksiReq := req.(models.TransaksiRequest)
 
-	// Ambil jam buka & tutup cabang
-	var jamBuka, jamTutup string
-	err := tx.QueryRow(`
-		SELECT jam_buka, jam_tutup FROM cabang WHERE id_cabang = ?
-	`, transaksiReq.IDCabang).Scan(&jamBuka, &jamTutup)
+	_, _, err := s.repositoryCabang.GetJamOperasional(tx, *transaksiReq.IDCabang)
 	if err != nil {
-		return nil, errors.New("cabang tidak ditemukan atau gagal mengambil jam operasional")
+		return nil, errors.New("cabang not found or fail geting operating hours")
 	}
 
 	loc := time.FixedZone("WIB", 7*3600)
