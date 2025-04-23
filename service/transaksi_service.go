@@ -177,7 +177,10 @@ func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status i
 		return nil, errors.New("cabang tidak ditemukan atau gagal mengambil jam operasional")
 	}
 
-	loc, _ := time.LoadLocation("Asia/Jakarta")
+	loc, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return nil, errors.New("gagal load timezone Asia/Jakarta")
+	}
 	now := time.Now().In(loc)
 
 	transaksi := &models.Transaksi{
