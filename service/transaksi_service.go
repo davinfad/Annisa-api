@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -167,6 +168,8 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
 	transaksiReq, ok := req.(models.TransaksiRequest)
+	log.Printf("DEBUG: incoming request %+v\n", req)
+
 	if !ok {
 		return nil, errors.New("invalid request payload: wrong type assertion")
 	}
