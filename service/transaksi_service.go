@@ -174,9 +174,6 @@ func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status i
 	}
 
 	loc := time.FixedZone("WIB", 7*3600)
-	if err != nil {
-		return nil, errors.New("gagal load timezone Asia/Jakarta")
-	}
 	now := time.Now().In(loc)
 
 	transaksi := &models.Transaksi{
