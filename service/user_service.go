@@ -25,9 +25,10 @@ func NewUserService(repositoryUser repository.RepositoryUser) *serviceUser {
 
 func (s *serviceUser) RegisterUser(inputUser models.UserRegisterDTO) (*models.User, error) {
 	user := &models.User{
-		Username: inputUser.Username,
-		Password: inputUser.Password,
-		IDCabang: inputUser.IDCabang,
+		Username:   inputUser.Username,
+		Password:   inputUser.Password,
+		AccessCode: inputUser.AccessCode,
+		IDCabang:   inputUser.IDCabang,
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(inputUser.Password), bcrypt.MinCost)

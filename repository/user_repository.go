@@ -3,7 +3,6 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
-	"time"
 )
 
 type RepositoryUser interface {
@@ -21,19 +20,18 @@ func NewUserRepository(db *sql.DB) *userRepository {
 
 func (r *userRepository) Create(user *models.User) (*models.User, error) {
 	query := `
-		INSERT INTO users (username, password, id_cabang, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO users (username, password, access_code, id_cabang, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
-
-	now := time.Now()
 
 	_, err := r.db.Exec(
 		query,
 		user.Username,
 		user.Password,
+		user.AccessCode,
 		user.IDCabang,
-		now,
-		now,
+		user.CreatedAt,
+		user.UpdatedAt,
 	)
 
 	return user, err
@@ -41,7 +39,7 @@ func (r *userRepository) Create(user *models.User) (*models.User, error) {
 
 func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 	query := `
-		SELECT username, password, id_cabang, created_at, updated_at
+		SELECT username, password, access_code, id_cabang, created_at, updated_at
 		FROM users
 		WHERE username = ?
 	`
@@ -52,6 +50,7 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 	err := row.Scan(
 		&user.Username,
 		&user.Password,
+		&user.AccessCode,
 		&user.IDCabang,
 		&user.CreatedAt,
 		&user.UpdatedAt,

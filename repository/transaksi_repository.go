@@ -34,7 +34,9 @@ func (r *repositoryTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang
 		SELECT 
 			SUM(total_harga) AS total_money,
 			SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END) AS total_cash,
-			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer
+			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer,
+			COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END) AS count_cash,
+			COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END) AS count_transfer
 		FROM transaksi 
 		WHERE DATE(created_at) = ? AND id_cabang = ? AND status = 0
 	`
@@ -44,6 +46,8 @@ func (r *repositoryTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang
 		&result.TotalMoney,
 		&result.TotalCash,
 		&result.TotalTransfer,
+		&result.CountCash,
+		&result.CountTransfer,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total money by date and cabang: %w", err)
@@ -57,7 +61,9 @@ func (r *repositoryTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang 
 		SELECT 
 			SUM(total_harga) AS total_money,
 			SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END) AS total_cash,
-			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer
+			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer,
+			COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END) AS count_cash,
+			COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END) AS count_transfer
 		FROM transaksi 
 		WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND id_cabang = ? AND status = 0
 	`
@@ -67,6 +73,8 @@ func (r *repositoryTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang 
 		&result.TotalMoney,
 		&result.TotalCash,
 		&result.TotalTransfer,
+		&result.CountCash,
+		&result.CountTransfer,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get total money by month and year: %w", err)

@@ -29,4 +29,6 @@ type TotalMoneyResult struct {
 	TotalMoney    float64 `json:"total_money"`
 	TotalCash     float64 `json:"total_cash"`
 	TotalTransfer float64 `json:"total_transfer"`
+	CountCash     int     `json:"count_cash"`
+	CountTransfer int     `json:"count_transfer"`
 }

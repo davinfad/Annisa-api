@@ -29,17 +29,20 @@ func (h *HandlerTransaksi) GetTotalMoneyByDateAndCabang(c *gin.Context) {
 
 	idCabang, err := strconv.Atoi(idCabangStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid id_cabang"})
+		response := helper.APIresponse(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	result, err := h.Service.GetTotalMoneyByDateAndCabang(date, idCabang)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve total money"})
+		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	response := helper.APIresponse(http.StatusOK, result)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *HandlerTransaksi) GetTotalMoneyByMonthAndYear(c *gin.Context) {
@@ -51,17 +54,20 @@ func (h *HandlerTransaksi) GetTotalMoneyByMonthAndYear(c *gin.Context) {
 	year, err2 := strconv.Atoi(yearStr)
 	idCabang, err3 := strconv.Atoi(idCabangStr)
 	if err1 != nil || err2 != nil || err3 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid parameters"})
+		response := helper.APIresponse(http.StatusBadRequest, gin.H{"error": "Invalid parameters"})
+		c.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	result, err := h.Service.GetTotalMoneyByMonthAndYear(month, year, idCabang)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve total money"})
+		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	response := helper.APIresponse(http.StatusOK, result)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
@@ -75,7 +81,7 @@ func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
 	transaksi, err := h.Service.GetTransaksiByID(id)
 	if err != nil {
 		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
-		c.JSON(http.StatusBadRequest, response)
+		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 

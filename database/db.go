@@ -116,6 +116,18 @@ func InitDb() (*sql.DB, error) {
 	);
 	`
 
+	queryAlter := `
+		ALTER TABLE users
+		ADD COLUMN IF NOT EXISTS access_code VARCHAR(15);
+	`
+
+	_, err = db.Exec(queryAlter)
+	if err != nil {
+		log.Printf("Warning: could not alter users table (might already exist): %v", err)
+	} else {
+		log.Println("Table altered (access_code added if needed).")
+	}
+
 	_, err = db.Exec(query)
 	if err != nil {
 		log.Fatalf("Error creating tables: %v", err)
