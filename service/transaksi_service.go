@@ -169,7 +169,9 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
 	transaksiReq, ok := req.(models.TransaksiRequest)
 	log.Printf("DEBUG: incoming request %+v\n", req)
-
+	if transaksiReq.IDCabang == nil {
+		return nil, errors.New("ID cabang tidak boleh kosong")
+	}
 	if !ok {
 		return nil, errors.New("invalid request payload: wrong type assertion")
 	}
