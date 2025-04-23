@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -167,18 +166,15 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 }
 
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
-	transaksiReq, ok := req.(models.TransaksiRequest)
-	log.Printf("DEBUG: incoming request %+v\n", req)
-	if transaksiReq.IDCabang == nil {
-		return nil, errors.New("ID cabang tidak boleh kosong")
-	}
-	if !ok {
-		return nil, errors.New("invalid request payload: wrong type assertion")
-	}
+	transaksiReq := req.(models.TransaksiRequest)
 
-	_, _, err := s.repositoryCabang.GetJamOperasional(tx, *transaksiReq.IDCabang)
+	// Ambil jam buka & tutup cabang
+	var jamBuka, jamTutup string
+	err := tx.QueryRow(`
+		SELECT jam_buka, jam_tutup FROM cabang WHERE id_cabang = ?
+	`, transaksiReq.IDCabang).Scan(&jamBuka, &jamTutup)
 	if err != nil {
-		return nil, errors.New("cabang not found or fail geting operating hours")
+		return nil, errors.New("cabang tidak ditemukan atau gagal mengambil jam operasional")
 	}
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
