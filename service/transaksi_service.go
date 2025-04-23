@@ -166,7 +166,10 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 }
 
 func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error) {
-	transaksiReq := req.(models.TransaksiRequest)
+	transaksiReq, ok := req.(models.TransaksiRequest)
+	if !ok {
+		return nil, errors.New("invalid request payload: wrong type assertion")
+	}
 
 	_, _, err := s.repositoryCabang.GetJamOperasional(tx, *transaksiReq.IDCabang)
 	if err != nil {
