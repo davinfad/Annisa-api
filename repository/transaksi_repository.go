@@ -112,8 +112,8 @@ func (r *repositoryTransaksi) GetByDateAndCabang(date string, idCabang int) ([]*
 			&t.NomorTelepon,
 			&t.TotalHarga,
 			&t.MetodePembayaran,
-			&status,
 			&t.Diskon,
+			&status,
 			&t.CreatedAt,
 		)
 		if err != nil {
@@ -161,7 +161,7 @@ func (r *repositoryTransaksi) GetMonthlyByCabang(month, year, idCabang int) ([]*
 		var status sql.NullInt64
 		err := rows.Scan(
 			&t.IDTransaksi, &t.IDCabang, &t.IDMember, &t.NamaPelanggan, &t.NomorTelepon,
-			&t.TotalHarga, &t.MetodePembayaran, &t.Diskon, &t.Status, &t.CreatedAt,
+			&t.TotalHarga, &t.MetodePembayaran, &t.Status, &t.Diskon, &t.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -206,7 +206,7 @@ func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaks
 		var status sql.NullInt64
 		err := rows.Scan(
 			&t.IDTransaksi, &t.IDCabang, &t.IDMember, &t.NamaPelanggan, &t.NomorTelepon,
-			&t.TotalHarga, &t.MetodePembayaran, &t.Status, &t.Diskon, &t.CreatedAt,
+			&t.TotalHarga, &t.MetodePembayaran, &t.Diskon, &t.Status, &t.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -260,8 +260,8 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 		&t.NomorTelepon,
 		&t.TotalHarga,
 		&t.MetodePembayaran,
-		&t.Status,
 		&t.Diskon,
+		&t.Status,
 		&t.CreatedAt,
 	)
 
