@@ -176,6 +176,13 @@ func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status i
 	loc := time.FixedZone("WIB", 7*3600)
 	now := time.Now().In(loc)
 
+	var diskon float64
+	if transaksiReq.Diskon != nil {
+		diskon = *transaksiReq.Diskon
+	} else {
+		diskon = 0
+	}
+
 	transaksi := &models.Transaksi{
 		NamaPelanggan:    transaksiReq.NamaPelanggan,
 		NomorTelepon:     transaksiReq.NomorTelepon,
@@ -184,6 +191,7 @@ func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status i
 		IDMember:         transaksiReq.IDMember,
 		IDCabang:         transaksiReq.IDCabang,
 		Status:           &status,
+		Diskon:           &diskon,
 		CreatedAt:        now,
 	}
 

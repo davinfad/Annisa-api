@@ -119,6 +119,8 @@ func InitDb() (*sql.DB, error) {
 	queryAlter := `
 		ALTER TABLE users
 		ADD COLUMN IF NOT EXISTS access_code VARCHAR(15);
+		ALTER TABLE transaksi
+		ADD COLUMN IF NOT EXISTS diskon DECIMAL(5,2);
 	`
 
 	_, err = db.Exec(queryAlter)

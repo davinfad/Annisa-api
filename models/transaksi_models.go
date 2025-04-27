@@ -11,6 +11,7 @@ type Transaksi struct {
 	TotalHarga       float64   `json:"total_harga"`
 	MetodePembayaran string    `json:"metode_pembayaran"`
 	Status           *int      `json:"status"`
+	Diskon           *float64  `json:"diskon"`
 	CreatedAt        time.Time `json:"created_at"`
 }
 
@@ -22,6 +23,7 @@ type TransaksiRequest struct {
 	IDMember         *int            `json:"id_member"`
 	IDCabang         *int            `json:"id_cabang"`
 	Items            []ItemTransaksi `json:"items"`
+	Diskon           *float64        `json:"diskon"`
 	IsDraft          bool            `json:"isDraft"`
 }
 

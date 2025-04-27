@@ -85,7 +85,7 @@ func (r *repositoryTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang 
 
 func (r *repositoryTransaksi) GetByDateAndCabang(date string, idCabang int) ([]*models.Transaksi, error) {
 	query := `
-		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at
+		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, diskon, status, created_at
 		FROM transaksi
 		WHERE DATE(created_at) = ? AND id_cabang = ?
 		ORDER BY created_at DESC
@@ -113,6 +113,7 @@ func (r *repositoryTransaksi) GetByDateAndCabang(date string, idCabang int) ([]*
 			&t.TotalHarga,
 			&t.MetodePembayaran,
 			&status,
+			&t.Diskon,
 			&t.CreatedAt,
 		)
 		if err != nil {
@@ -140,7 +141,7 @@ func (r *repositoryTransaksi) GetByDateAndCabang(date string, idCabang int) ([]*
 
 func (r *repositoryTransaksi) GetMonthlyByCabang(month, year, idCabang int) ([]*models.Transaksi, error) {
 	query := `
-		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at
+		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, diskon, created_at
 		FROM transaksi
 		WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND id_cabang = ?
 		ORDER BY created_at DESC
@@ -160,7 +161,7 @@ func (r *repositoryTransaksi) GetMonthlyByCabang(month, year, idCabang int) ([]*
 		var status sql.NullInt64
 		err := rows.Scan(
 			&t.IDTransaksi, &t.IDCabang, &t.IDMember, &t.NamaPelanggan, &t.NomorTelepon,
-			&t.TotalHarga, &t.MetodePembayaran, &t.Status, &t.CreatedAt,
+			&t.TotalHarga, &t.MetodePembayaran, &t.Diskon, &t.Status, &t.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -186,7 +187,7 @@ func (r *repositoryTransaksi) GetMonthlyByCabang(month, year, idCabang int) ([]*
 
 func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaksi, error) {
 	query := `
-		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at
+		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, diskon, status, created_at
 		FROM transaksi
 		WHERE id_cabang = ? AND status = 1 ORDER BY created_at DESC
 	`
@@ -205,7 +206,7 @@ func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaks
 		var status sql.NullInt64
 		err := rows.Scan(
 			&t.IDTransaksi, &t.IDCabang, &t.IDMember, &t.NamaPelanggan, &t.NomorTelepon,
-			&t.TotalHarga, &t.MetodePembayaran, &t.Status, &t.CreatedAt,
+			&t.TotalHarga, &t.MetodePembayaran, &t.Status, &t.Diskon, &t.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -230,11 +231,11 @@ func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaks
 
 func (r *repositoryTransaksi) CreateTx(tx *sql.Tx, t *models.Transaksi) (int64, error) {
 	query := `
-		INSERT INTO transaksi (nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, id_member, id_cabang, status, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO transaksi (nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, id_member, id_cabang, status, diskon, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	now := time.Now()
-	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, now)
+	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, t.Diskon, now)
 	if err != nil {
 		return 0, err
 	}
@@ -244,7 +245,7 @@ func (r *repositoryTransaksi) CreateTx(tx *sql.Tx, t *models.Transaksi) (int64, 
 func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 	var status sql.NullInt64
 	query := `
-		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at
+		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, diskon, status, created_at
 		FROM transaksi WHERE id_transaksi = ?
 	`
 
@@ -260,6 +261,7 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 		&t.TotalHarga,
 		&t.MetodePembayaran,
 		&t.Status,
+		&t.Diskon,
 		&t.CreatedAt,
 	)
 
@@ -279,7 +281,7 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 
 func (r *repositoryTransaksi) GetAll() ([]*models.Transaksi, error) {
 	query := `
-		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, created_at
+		SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, status, diskon, created_at
 		FROM transaksi ORDER BY created_at DESC
 	`
 
@@ -301,6 +303,7 @@ func (r *repositoryTransaksi) GetAll() ([]*models.Transaksi, error) {
 			&t.TotalHarga,
 			&t.MetodePembayaran,
 			&t.Status,
+			&t.Diskon,
 			&t.CreatedAt,
 		)
 		if err != nil {
