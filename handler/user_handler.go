@@ -99,10 +99,10 @@ func (h *userHandler) Login(c *gin.Context) {
 		}
 	}
 
-	accesCode := loggedinUser.AccessCode
+	// accesCode := loggedinUser.AccessCode
 
 	response := gin.H{
-		"access_code": accesCode,
+		"access_code": "",
 		"message":     "Login successful!",
 		"token":       token,
 		"id_cabang":   idCabang,
