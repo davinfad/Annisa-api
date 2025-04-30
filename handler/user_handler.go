@@ -99,14 +99,11 @@ func (h *userHandler) Login(c *gin.Context) {
 		}
 	}
 
-	// accesCode := loggedinUser.AccessCode
-
 	response := gin.H{
-		"access_code": "",
-		"message":     "Login successful!",
 		"token":       token,
 		"id_cabang":   idCabang,
 		"nama_cabang": namaCabang,
+		"access_code": loggedinUser.AccessCode,
 	}
 
 	val := helper.APIresponse(http.StatusOK, response)
