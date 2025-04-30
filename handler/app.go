@@ -32,17 +32,16 @@ func StartApp() {
 	userService := service.NewUserService(userRepository)
 	authService := auth.NewUserAuthService()
 	authService.SetSecretKey(secretKey)
-	userHandler := NewUserHandler(userService, authService)
-
-	router.POST("/register/", userHandler.RegisterUser)
-	router.POST("/login/", userHandler.Login)
-
 	cabangRepository := repository.NewCabangRepository(db)
 	cabangService := service.NewCabangService(cabangRepository)
+	userHandler := NewUserHandler(userService, cabangService, authService)
+
 	cabangHandler := NewCabangHandler(cabangService)
 
 	cabang := router.Group("/cabang")
 	cabang.POST("/", middleware.AuthMiddleware(authService, userService), cabangHandler.Create)
+	router.POST("/register/", userHandler.RegisterUser)
+	router.POST("/login/", userHandler.Login)
 
 	karyawanRepository := repository.NewKaryawanRepository(db)
 	karyawanService := service.NewKaryawanService(karyawanRepository)

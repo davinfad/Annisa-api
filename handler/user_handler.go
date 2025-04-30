@@ -11,12 +11,13 @@ import (
 )
 
 type userHandler struct {
-	userService service.ServiceUser
-	authService auth.UserAuthService
+	userService   service.ServiceUser
+	cabangService service.ServiceCabang
+	authService   auth.UserAuthService
 }
 
-func NewUserHandler(userService service.ServiceUser, authService auth.UserAuthService) *userHandler {
-	return &userHandler{userService, authService}
+func NewUserHandler(userService service.ServiceUser, cabangService service.ServiceCabang, authService auth.UserAuthService) *userHandler {
+	return &userHandler{userService, cabangService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -73,12 +74,28 @@ func (h *userHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
+
 	token, err := h.authService.GenerateToken(loggedinUser.Username)
 	if err != nil {
 		response := helper.APIresponse(http.StatusUnprocessableEntity, err.Error())
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
-	response := helper.APIresponse(http.StatusOK, token)
+
+	cabang, err := h.cabangService.GetByID(*loggedinUser.IDCabang)
+	if err != nil {
+		response := helper.APIresponse(http.StatusInternalServerError, "Failed to fetch cabang data")
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	responseData := gin.H{
+		"message":     "Login successful!",
+		"token":       token,
+		"id_cabang":   cabang.IDCabang,
+		"nama_cabang": cabang.NamaCabang,
+		"acces_code":  loggedinUser.AccessCode,
+	}
+	response := helper.APIresponse(http.StatusOK, responseData)
 	c.JSON(http.StatusOK, response)
 }
