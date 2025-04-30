@@ -9,6 +9,7 @@ import (
 
 type ServiceCabang interface {
 	Create(cabang *models.CabangDTO) (*models.Cabang, error)
+	GetByID(id int) (*models.Cabang, error)
 }
 
 type serviceCabang struct {
@@ -17,6 +18,17 @@ type serviceCabang struct {
 
 func NewCabangService(repositoryCabang repository.RepositoryCabang) *serviceCabang {
 	return &serviceCabang{repositoryCabang}
+}
+
+func (s *serviceCabang) GetByID(id int) (*models.Cabang, error) {
+	cabang, err := s.repositoryCabang.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+	if cabang == nil {
+		return nil, err
+	}
+	return cabang, nil
 }
 
 func (s *serviceCabang) Create(cabang *models.CabangDTO) (*models.Cabang, error) {

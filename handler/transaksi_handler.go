@@ -23,6 +23,11 @@ func NewHandlerTransaksi(db *sql.DB, service service.ServiceTransaksi) *HandlerT
 	}
 }
 
+type TransaksiDetailResponse struct {
+	Transaksi *models.Transaksi            `json:"transaksi"`
+	Items     []models.ItemTransaksiDetail `json:"items"`
+}
+
 func (h *HandlerTransaksi) GetTotalMoneyByDateAndCabang(c *gin.Context) {
 	date := c.Param("date")
 	idCabangStr := c.Param("id_cabang")
@@ -76,21 +81,33 @@ func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
 	if err != nil {
 		response := helper.APIresponse(http.StatusBadRequest, err.Error())
 		c.JSON(http.StatusBadRequest, response)
+		return
 	}
 
 	transaksi, err := h.Service.GetTransaksiByID(id)
+	if err != nil {
+		response := helper.APIresponse(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	if transaksi == nil {
+		response := helper.APIresponse(http.StatusNotFound, gin.H{"error": "Transaksi not found"})
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	items, err := h.Service.GetItemTransaksiByTransaksiID(id)
 	if err != nil {
 		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	if transaksi == nil {
-		response := helper.APIresponse(http.StatusNotFound, gin.H{"error": "Transaksi not found"})
-		c.JSON(http.StatusNotFound, response)
-		return
+	result := TransaksiDetailResponse{
+		Transaksi: transaksi,
+		Items:     items,
 	}
-	response := helper.APIresponse(http.StatusOK, transaksi)
+	response := helper.APIresponse(http.StatusOK, result)
 	c.JSON(http.StatusOK, response)
 }
 

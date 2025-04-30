@@ -22,8 +22,7 @@ func NewCabangRepository(db *sql.DB) *cabangRepository {
 
 func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error) {
 	query := "INSERT INTO cabang (id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	now := time.Now()
-	result, err := r.db.Exec(query, cabang.IDCabang, cabang.NamaCabang, cabang.KodeCabang, cabang.JamBuka, cabang.JamTutup, now, now)
+	result, err := r.db.Exec(query, cabang.IDCabang, cabang.NamaCabang, cabang.KodeCabang, cabang.JamBuka, cabang.JamTutup, cabang.CreatedAt, cabang.UpdatedAt)
 	if err != nil {
 		return cabang, err
 	}
@@ -37,18 +36,28 @@ func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error)
 func (r *cabangRepository) GetByID(ID int) (*models.Cabang, error) {
 	query := `SELECT id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at FROM cabang WHERE id_cabang = ?`
 
+	var jamBukaStr, jamTutupStr string
 	l := &models.Cabang{}
-	err := r.db.QueryRow(query, ID).Scan(
-		&l.IDCabang, &l.NamaCabang, &l.KodeCabang, &l.JamBuka,
-		&l.JamTutup, &l.CreatedAt, &l.UpdatedAt,
-	)
 
+	err := r.db.QueryRow(query, ID).Scan(
+		&l.IDCabang,
+		&l.NamaCabang,
+		&l.KodeCabang,
+		&jamBukaStr,
+		&jamTutupStr,
+		&l.CreatedAt,
+		&l.UpdatedAt,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
+
+	layout := "15:04:05" // jam format "HH:MM:SS"
+	l.JamBuka, _ = time.Parse(layout, jamBukaStr)
+	l.JamTutup, _ = time.Parse(layout, jamTutupStr)
 
 	return l, nil
 }

@@ -10,6 +10,7 @@ type RepositoryItemTransaksi interface {
 	CreateBulkTx(tx *sql.Tx, items []models.ItemTransaksi) error
 	GetByTransaksiIDTx(tx *sql.Tx, idTransaksi int) ([]*models.ItemTransaksi, error)
 	DeleteByTransaksiIDTx(tx *sql.Tx, idTransaksi int) error
+	GetByTransaksiID(ID int) ([]models.ItemTransaksiDetail, error)
 }
 
 type repositoryItemTransaksi struct {
@@ -60,4 +61,44 @@ func (r *repositoryItemTransaksi) CreateBulkTx(tx *sql.Tx, items []models.ItemTr
 		}
 	}
 	return nil
+}
+
+func (r *repositoryItemTransaksi) GetByTransaksiID(ID int) ([]models.ItemTransaksiDetail, error) {
+	query := `
+	SELECT 
+		it.id_item_transaksi, it.id_transaksi, it.id_karyawan, it.id_layanan,
+		it.catatan, it.harga, it.created_at,
+		k.nama_karyawan, l.nama_layanan
+	FROM item_transaksi it
+	LEFT JOIN karyawan k ON it.id_karyawan = k.id_karyawan
+	LEFT JOIN layanan l ON it.id_layanan = l.id_layanan
+	WHERE it.id_transaksi = ?
+	`
+
+	rows, err := r.db.Query(query, ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []models.ItemTransaksiDetail
+	for rows.Next() {
+		var item models.ItemTransaksiDetail
+		err := rows.Scan(
+			&item.IDItemTransaksi,
+			&item.IDTransaksi,
+			&item.IDKaryawan,
+			&item.IDLayanan,
+			&item.Catatan,
+			&item.Harga,
+			&item.CreatedAt,
+			&item.NamaKaryawan,
+			&item.NamaLayanan,
+		)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, nil
 }

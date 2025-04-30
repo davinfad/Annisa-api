@@ -5,6 +5,7 @@ import (
 	"annisa-api/helper"
 	"annisa-api/models"
 	"annisa-api/service"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -74,7 +75,6 @@ func (h *userHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
-
 	token, err := h.authService.GenerateToken(loggedinUser.Username)
 	if err != nil {
 		response := helper.APIresponse(http.StatusUnprocessableEntity, err.Error())
@@ -82,13 +82,30 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	responseData := gin.H{
+	var idCabang int
+	var namaCabang string
+
+	if loggedinUser.IDCabang != nil {
+		fmt.Println("Get cabang for ID:", *loggedinUser.IDCabang)
+
+		cabang, err := h.cabangService.GetByID(*loggedinUser.IDCabang)
+		if err != nil {
+			fmt.Println("Error get cabang:", err.Error())
+		} else if cabang == nil {
+			fmt.Println("Cabang not found")
+		} else {
+			idCabang = cabang.IDCabang
+			namaCabang = cabang.NamaCabang
+		}
+	}
+
+	response := gin.H{
 		"message":     "Login successful!",
 		"token":       token,
-		"id_cabang":   loggedinUser.IDCabang,
-		"nama_cabang": loggedinUser.Cabangs.NamaCabang,
-		"acces_code":  loggedinUser.AccessCode,
+		"id_cabang":   idCabang,
+		"nama_cabang": namaCabang,
 	}
-	response := helper.APIresponse(http.StatusOK, responseData)
-	c.JSON(http.StatusOK, response)
+
+	val := helper.APIresponse(http.StatusOK, response)
+	c.JSON(http.StatusOK, val)
 }

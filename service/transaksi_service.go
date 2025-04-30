@@ -20,6 +20,7 @@ type ServiceTransaksi interface {
 	DeleteTransaksi(ctx context.Context, idTransaksi int) error
 	GetTotalMoneyByDateAndCabang(date string, idCabang int) (*models.TotalMoneyResult, error)
 	GetTotalMoneyByMonthAndYear(month, year, idCabang int) (*models.TotalMoneyResult, error)
+	GetItemTransaksiByTransaksiID(id int) ([]models.ItemTransaksiDetail, error)
 }
 
 type serviceTransaksi struct {
@@ -33,6 +34,10 @@ type serviceTransaksi struct {
 
 func NewTransaksiService(db *sql.DB, repositoryTransaksi repository.RepositoryTranskasi, repositoryCabang repository.RepositoryCabang, repositoryItemTransaksi repository.RepositoryItemTransaksi, repositoryLayanan repository.RepositoryLayanan, repositoryKaryawan repository.RepositoryKaryawan) ServiceTransaksi {
 	return &serviceTransaksi{db, repositoryTransaksi, repositoryCabang, repositoryItemTransaksi, repositoryLayanan, repositoryKaryawan}
+}
+
+func (s *serviceTransaksi) GetItemTransaksiByTransaksiID(id int) ([]models.ItemTransaksiDetail, error) {
+	return s.repositoryItemTransaksi.GetByTransaksiID(id)
 }
 
 func (s *serviceTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang int) (*models.TotalMoneyResult, error) {

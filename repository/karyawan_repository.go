@@ -89,7 +89,7 @@ func (r *repositoryKaryawan) GetByID(ID int) (*models.Karyawan, error) {
 }
 
 func (r *repositoryKaryawan) GetByIDCabang(IDCabang int) (*models.Karyawan, error) {
-	query := `SELECT id_karyawan, nama_karyawan, id_cabang, nomor_telepon, alamat, komisi, komisi_harian, created_at, updated_at FROM karyawan WHERE id_cabang = ? LIMIT 1 ORDER BY nama_karyawan ASC`
+	query := `SELECT id_karyawan, nama_karyawan, id_cabang, nomor_telepon, alamat, komisi, komisi_harian, created_at, updated_at FROM karyawan WHERE id_cabang = ? ORDER BY nama_karyawan ASC LIMIT 1`
 
 	row := r.db.QueryRow(query, IDCabang)
 
