@@ -104,7 +104,6 @@ func (h *userHandler) Login(c *gin.Context) {
 		"token":       token,
 		"id_cabang":   idCabang,
 		"nama_cabang": namaCabang,
-		"val":         loggedinUser.AccessCode,
 	}
 
 	val := helper.APIresponse(http.StatusOK, response)
