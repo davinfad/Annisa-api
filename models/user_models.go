@@ -7,6 +7,7 @@ type User struct {
 	Password   string    `json:"password"`
 	AccessCode string    `json:"access_code"`
 	IDCabang   *int      `json:"id_cabang"`
+	Cabangs    Cabang    `json:"cabang"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }

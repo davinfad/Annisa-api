@@ -82,18 +82,11 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	cabang, err := h.cabangService.GetByID(*loggedinUser.IDCabang)
-	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, "Failed to fetch cabang data")
-		c.JSON(http.StatusInternalServerError, response)
-		return
-	}
-
 	responseData := gin.H{
 		"message":     "Login successful!",
 		"token":       token,
-		"id_cabang":   cabang.IDCabang,
-		"nama_cabang": cabang.NamaCabang,
+		"id_cabang":   loggedinUser.IDCabang,
+		"nama_cabang": loggedinUser.Cabangs.NamaCabang,
 		"acces_code":  loggedinUser.AccessCode,
 	}
 	response := helper.APIresponse(http.StatusOK, responseData)
