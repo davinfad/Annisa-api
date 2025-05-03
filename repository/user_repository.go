@@ -42,10 +42,13 @@ func (r *userRepository) Create(user *models.User) (*models.User, error) {
 
 func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 	query := `
-		SELECT username, password, access_code, id_cabang, created_at, updated_at
-		FROM users
-		WHERE username = ?
-	`
+	SELECT 
+		u.username, u.password, u.access_code, u.id_cabang, u.created_at, u.updated_at,
+		c.id_cabang, c.nama_cabang
+	FROM users u
+	LEFT JOIN cabang c ON u.id_cabang = c.id_cabang
+	WHERE u.username = ?
+`
 
 	row := r.db.QueryRow(query, username)
 
@@ -57,6 +60,8 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 		&user.IDCabang,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Cabangs.IDCabang,
+		&user.Cabangs.NamaCabang,
 	)
 
 	if err != nil {

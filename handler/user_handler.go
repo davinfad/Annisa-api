@@ -98,13 +98,14 @@ func (h *userHandler) Login(c *gin.Context) {
 	// 	}
 	// }
 
-	// response := gin.H{
-	// 	"message":     "Login successful!",
-	// 	"token":       token,
-	// 	"id_cabang":   idCabang,
-	// 	"nama_cabang": namaCabang,
-	// }
+	response := gin.H{
+		"message":     "Login successful!",
+		"token":       token,
+		"id_cabang":   loggedinUser.IDCabang,
+		"nama_cabang": loggedinUser.Cabangs.NamaCabang,
+		"access_code": loggedinUser.AccessCode,
+	}
 
-	val := helper.APIresponse(http.StatusOK, token)
+	val := helper.APIresponse(http.StatusOK, response)
 	c.JSON(http.StatusOK, val)
 }
