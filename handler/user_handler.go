@@ -5,7 +5,6 @@ import (
 	"annisa-api/helper"
 	"annisa-api/models"
 	"annisa-api/service"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -82,30 +81,30 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	var idCabang int
-	var namaCabang string
+	// var idCabang int
+	// var namaCabang string
 
-	if loggedinUser.IDCabang != nil {
-		fmt.Println("Get cabang for ID:", *loggedinUser.IDCabang)
+	// if loggedinUser.IDCabang != nil {
+	// 	fmt.Println("Get cabang for ID:", *loggedinUser.IDCabang)
 
-		cabang, err := h.cabangService.GetByID(*loggedinUser.IDCabang)
-		if err != nil {
-			fmt.Println("Error get cabang:", err.Error())
-		} else if cabang == nil {
-			fmt.Println("Cabang not found")
-		} else {
-			idCabang = cabang.IDCabang
-			namaCabang = cabang.NamaCabang
-		}
-	}
+	// 	cabang, err := h.cabangService.GetByID(*loggedinUser.IDCabang)
+	// 	if err != nil {
+	// 		fmt.Println("Error get cabang:", err.Error())
+	// 	} else if cabang == nil {
+	// 		fmt.Println("Cabang not found")
+	// 	} else {
+	// 		idCabang = cabang.IDCabang
+	// 		namaCabang = cabang.NamaCabang
+	// 	}
+	// }
 
-	response := gin.H{
-		"message":     "Login successful!",
-		"token":       token,
-		"id_cabang":   idCabang,
-		"nama_cabang": namaCabang,
-	}
+	// response := gin.H{
+	// 	"message":     "Login successful!",
+	// 	"token":       token,
+	// 	"id_cabang":   idCabang,
+	// 	"nama_cabang": namaCabang,
+	// }
 
-	val := helper.APIresponse(http.StatusOK, response)
+	val := helper.APIresponse(http.StatusOK, token)
 	c.JSON(http.StatusOK, val)
 }
