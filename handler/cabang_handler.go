@@ -20,11 +20,8 @@ func NewCabangHandler(cabangService service.ServiceCabang) *cabangHandler {
 func (h *cabangHandler) Create(c *gin.Context) {
 	var input *models.CabangDTO
 
-	err := c.ShouldBindJSON(&input)
-	if err != nil {
-		errors := helper.FormatValidationError(err)
-		errorMessage := gin.H{"errors": errors}
-		response := helper.APIresponse(http.StatusUnprocessableEntity, errorMessage)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		response := helper.APIresponse(http.StatusUnprocessableEntity, gin.H{"errors": helper.FormatValidationError(err)})
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
@@ -36,6 +33,5 @@ func (h *cabangHandler) Create(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIresponse(http.StatusOK, val)
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, helper.APIresponse(http.StatusOK, val))
 }

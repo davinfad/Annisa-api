@@ -29,11 +29,11 @@ func StartApp() {
 	}))
 
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
-	authService := auth.NewUserAuthService()
-	authService.SetSecretKey(secretKey)
 	cabangRepository := repository.NewCabangRepository(db)
 	cabangService := service.NewCabangService(cabangRepository)
+	userService := service.NewUserService(userRepository, cabangService)
+	authService := auth.NewUserAuthService()
+	authService.SetSecretKey(secretKey)
 	userHandler := NewUserHandler(userService, cabangService, authService)
 
 	cabangHandler := NewCabangHandler(cabangService)

@@ -23,25 +23,20 @@ func NewUserHandler(userService service.ServiceUser, cabangService service.Servi
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	var input models.UserRegisterDTO
 
-	err := c.ShouldBindJSON(&input)
-	if err != nil {
-		errors := helper.FormatValidationError(err)
-		errorMessage := gin.H{"errors": errors}
-		response := helper.APIresponse(http.StatusUnprocessableEntity, errorMessage)
+	if err := c.ShouldBindJSON(&input); err != nil {
+		response := helper.APIresponse(http.StatusUnprocessableEntity, gin.H{"errors": helper.FormatValidationError(err)})
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
-	isEmailAvailable, err := h.userService.IsUsernameAvailability(input.Username)
-	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, nil)
-		c.JSON(http.StatusInternalServerError, response)
-		return
-	}
-
-	if !isEmailAvailable {
-		response := helper.APIresponse(http.StatusConflict, err.Error())
-		c.JSON(http.StatusConflict, response)
+	isAvailable, err := h.userService.IsUsernameAvailability(input.Username)
+	if err != nil || !isAvailable {
+		status := http.StatusConflict
+		if err != nil {
+			status = http.StatusInternalServerError
+		}
+		response := helper.APIresponse(status, err.Error())
+		c.JSON(status, response)
 		return
 	}
 
@@ -52,8 +47,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIresponse(http.StatusOK, newUser)
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, helper.APIresponse(http.StatusOK, newUser))
 }
 
 func (h *userHandler) Login(c *gin.Context) {

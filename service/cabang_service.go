@@ -26,7 +26,7 @@ func (s *serviceCabang) GetByID(id int) (*models.Cabang, error) {
 		return nil, err
 	}
 	if cabang == nil {
-		return nil, err
+		return nil, fmt.Errorf("cabang not found")
 	}
 	return cabang, nil
 }
@@ -44,6 +44,7 @@ func (s *serviceCabang) Create(cabang *models.CabangDTO) (*models.Cabang, error)
 		return nil, fmt.Errorf("invalid jam_tutup: %v", err)
 	}
 
+	// ✅ Fix: Gunakan tahun 2000 agar valid
 	jamBuka := time.Date(2000, time.January, 1, jamBukaParsed.Hour(), jamBukaParsed.Minute(), 0, 0, time.Local)
 	jamTutup := time.Date(2000, time.January, 1, jamTutupParsed.Hour(), jamTutupParsed.Minute(), 0, 0, time.Local)
 

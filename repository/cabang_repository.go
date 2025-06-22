@@ -21,15 +21,28 @@ func NewCabangRepository(db *sql.DB) *cabangRepository {
 }
 
 func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error) {
-	query := "INSERT INTO cabang (id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	result, err := r.db.Exec(query, cabang.IDCabang, cabang.NamaCabang, cabang.KodeCabang, cabang.JamBuka, cabang.JamTutup, cabang.CreatedAt, cabang.UpdatedAt)
+	now := time.Now()
+	query := `INSERT INTO cabang (nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at)
+			  VALUES (?, ?, ?, ?, ?, ?)`
+
+	// ✅ Format jam_buka dan jam_tutup ke string yang cocok dengan kolom TIME di MySQL
+	formattedJamBuka := cabang.JamBuka.Format("15:04:05")
+	formattedJamTutup := cabang.JamTutup.Format("15:04:05")
+
+	result, err := r.db.Exec(
+		query,
+		cabang.NamaCabang,
+		cabang.KodeCabang,
+		formattedJamBuka,
+		formattedJamTutup,
+		now,
+		now,
+	)
 	if err != nil {
 		return cabang, err
 	}
-
-	cabangID, _ := result.LastInsertId()
-	cabang.IDCabang = int(cabangID)
-
+	lastID, _ := result.LastInsertId()
+	cabang.IDCabang = int(lastID)
 	return cabang, nil
 }
 
@@ -55,7 +68,7 @@ func (r *cabangRepository) GetByID(ID int) (*models.Cabang, error) {
 		return nil, err
 	}
 
-	layout := "15:04:05" // jam format "HH:MM:SS"
+	layout := "15:04:05"
 	l.JamBuka, _ = time.Parse(layout, jamBukaStr)
 	l.JamTutup, _ = time.Parse(layout, jamTutupStr)
 

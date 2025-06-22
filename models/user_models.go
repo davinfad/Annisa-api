@@ -17,6 +17,10 @@ type UserRegisterDTO struct {
 	Password   string `json:"password" binding:"required"`
 	AccessCode string `json:"access_code" binding:"required"`
 	IDCabang   *int   `json:"id_cabang"`
+	CabangName string `json:"cabang_name"`
+	KodeCabang string `json:"kode_cabang"`
+	JamBuka    string `json:"jam_buka"`
+	JamTutup   string `json:"jam_tutup"`
 }
 
 type UserLoginDTO struct {

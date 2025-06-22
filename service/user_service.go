@@ -17,31 +17,55 @@ type ServiceUser interface {
 
 type serviceUser struct {
 	repositoryUser repository.RepositoryUser
+	cabangService  ServiceCabang
 }
 
-func NewUserService(repositoryUser repository.RepositoryUser) *serviceUser {
-	return &serviceUser{repositoryUser}
+func NewUserService(repositoryUser repository.RepositoryUser, cabangService ServiceCabang) *serviceUser {
+	return &serviceUser{repositoryUser, cabangService}
 }
 
 func (s *serviceUser) RegisterUser(inputUser models.UserRegisterDTO) (*models.User, error) {
-	user := &models.User{
-		Username:   inputUser.Username,
-		Password:   inputUser.Password,
-		AccessCode: inputUser.AccessCode,
-		IDCabang:   inputUser.IDCabang,
+	var idCabang *int = inputUser.IDCabang
+
+	// Buat cabang baru jika tidak ada ID
+	if idCabang == nil && inputUser.CabangName != "" {
+		newCabang := &models.CabangDTO{
+			NamaCabang: inputUser.CabangName,
+			KodeCabang: inputUser.KodeCabang,
+			JamBuka:    inputUser.JamBuka,
+			JamTutup:   inputUser.JamTutup,
+		}
+		cabang, err := s.cabangService.Create(newCabang)
+		if err != nil {
+			return nil, err
+		}
+		idCabang = &cabang.IDCabang
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(inputUser.Password), bcrypt.MinCost)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
-	user.Password = string(passwordHash)
 
-	createUser, err := s.repositoryUser.Create(user)
-	if err != nil {
-		return createUser, err
+	user := &models.User{
+		Username:   inputUser.Username,
+		Password:   string(passwordHash),
+		AccessCode: inputUser.AccessCode,
+		IDCabang:   idCabang,
 	}
-	return createUser, nil
+
+	_, err = s.repositoryUser.Create(user)
+	if err != nil {
+		return nil, err
+	}
+
+	// ✅ Ambil ulang user agar Cabangs keisi
+	fullUser, err := s.repositoryUser.FindByUsername(user.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	return fullUser, nil
 }
 
 func (s *serviceUser) LoginUser(inputUser models.UserLoginDTO) (*models.User, error) {
