@@ -19,6 +19,6 @@ type CreateKaryawanDTO struct {
 	IDCabang     *int    `json:"id_cabang"`
 	NomorTelepon *string `json:"nomor_telepon"`
 	Alamat       *string `json:"alamat"`
-	Komisi       float64 `json:"komisi" binding:"required"`
-	KomisiHarian float64 `json:"komisi_harian" binding:"required"`
+	Komisi       float64 `json:"komisi"`
+	KomisiHarian float64 `json:"komisi_harian"`
 }

@@ -119,7 +119,7 @@ func (r *repositoryKaryawan) GetByIDCabang(IDCabang int) (*models.Karyawan, erro
 func (r *repositoryKaryawan) Update(karyawan *models.Karyawan) (*models.Karyawan, error) {
 	query := `
 		UPDATE karyawan 
-		SET nama_karyawan = ?, id_cabang = ?, nomor_telepon = ?, alamat = ?, komisi = ?, komisi_harian = ?, updated_at = ? 
+		SET nama_karyawan = ?, id_cabang = ?, nomor_telepon = ?, alamat = ?, updated_at = ? 
 		WHERE id_karyawan = ?
 	`
 
@@ -130,8 +130,8 @@ func (r *repositoryKaryawan) Update(karyawan *models.Karyawan) (*models.Karyawan
 		karyawan.IDCabang,
 		karyawan.NomorTelepon,
 		karyawan.Alamat,
-		karyawan.Komisi,
-		karyawan.KomisiHarian,
+		// karyawan.Komisi,
+		// karyawan.KomisiHarian,
 		now,
 		karyawan.IDKaryawan,
 	)
