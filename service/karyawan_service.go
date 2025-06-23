@@ -12,7 +12,7 @@ import (
 type ServiceKaryawan interface {
 	Create(karyawan *models.CreateKaryawanDTO) (*models.Karyawan, error)
 	GetByID(ID int) (*models.Karyawan, error)
-	GetByIDCabang(IDCabang int) (*models.Karyawan, error)
+	GetByIDCabang(IDCabang int) ([]*models.Karyawan, error)
 	Update(ID int, input *models.CreateKaryawanDTO) (*models.Karyawan, error)
 	Delete(ID int) (*models.Karyawan, error)
 }
@@ -54,13 +54,13 @@ func (s *serviceKaryawan) GetByID(ID int) (*models.Karyawan, error) {
 	return cek, nil
 }
 
-func (s *serviceKaryawan) GetByIDCabang(IDCabang int) (*models.Karyawan, error) {
+func (s *serviceKaryawan) GetByIDCabang(IDCabang int) ([]*models.Karyawan, error) {
 	get, err := s.repositoryKaryawan.GetByIDCabang(IDCabang)
 	if err != nil {
-		return get, err
+		return nil, err
 	}
 	if get == nil {
-		return nil, err
+		return nil, nil
 	}
 	return get, nil
 }

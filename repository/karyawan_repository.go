@@ -10,7 +10,7 @@ import (
 type RepositoryKaryawan interface {
 	Create(karyawan *models.Karyawan) (*models.Karyawan, error)
 	GetByID(ID int) (*models.Karyawan, error)
-	GetByIDCabang(IDCabang int) (*models.Karyawan, error)
+	GetByIDCabang(IDCabang int) ([]*models.Karyawan, error)
 	Update(karyawan *models.Karyawan) (*models.Karyawan, error)
 	Delete(ID int) (*models.Karyawan, error)
 	ResetDailyCommission() error
@@ -88,32 +88,41 @@ func (r *repositoryKaryawan) GetByID(ID int) (*models.Karyawan, error) {
 	return &karyawan, nil
 }
 
-func (r *repositoryKaryawan) GetByIDCabang(IDCabang int) (*models.Karyawan, error) {
-	query := `SELECT id_karyawan, nama_karyawan, id_cabang, nomor_telepon, alamat, komisi, komisi_harian, created_at, updated_at FROM karyawan WHERE id_cabang = ? ORDER BY nama_karyawan ASC LIMIT 1`
+func (r *repositoryKaryawan) GetByIDCabang(IDCabang int) ([]*models.Karyawan, error) {
+	query := `SELECT id_karyawan, nama_karyawan, id_cabang, nomor_telepon, alamat, komisi, komisi_harian, created_at, updated_at FROM karyawan 
+	WHERE id_cabang = ? ORDER BY nama_karyawan ASC`
 
-	row := r.db.QueryRow(query, IDCabang)
-
-	var karyawan models.Karyawan
-	err := row.Scan(
-		&karyawan.IDKaryawan,
-		&karyawan.NamaKaryawan,
-		&karyawan.IDCabang,
-		&karyawan.NomorTelepon,
-		&karyawan.Alamat,
-		&karyawan.Komisi,
-		&karyawan.KomisiHarian,
-		&karyawan.CreatedAt,
-		&karyawan.UpdatedAt,
-	)
-
+	rows, err := r.db.Query(query, IDCabang)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
+		return nil, err
+	}
+	defer rows.Close()
+
+	var karyawans []*models.Karyawan
+	for rows.Next() {
+		var karyawan models.Karyawan
+		err := rows.Scan(
+			&karyawan.IDKaryawan,
+			&karyawan.NamaKaryawan,
+			&karyawan.IDCabang,
+			&karyawan.NomorTelepon,
+			&karyawan.Alamat,
+			&karyawan.Komisi,
+			&karyawan.KomisiHarian,
+			&karyawan.CreatedAt,
+			&karyawan.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
 		}
+		karyawans = append(karyawans, &karyawan)
+	}
+
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return &karyawan, nil
+	return karyawans, nil
 }
 
 func (r *repositoryKaryawan) Update(karyawan *models.Karyawan) (*models.Karyawan, error) {
@@ -130,8 +139,6 @@ func (r *repositoryKaryawan) Update(karyawan *models.Karyawan) (*models.Karyawan
 		karyawan.IDCabang,
 		karyawan.NomorTelepon,
 		karyawan.Alamat,
-		// karyawan.Komisi,
-		// karyawan.KomisiHarian,
 		now,
 		karyawan.IDKaryawan,
 	)
