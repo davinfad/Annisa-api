@@ -51,8 +51,8 @@ func StartApp() {
 	karyawan := router.Group("/karyawan")
 	karyawan.POST("/", middleware.AuthMiddleware(authService, userService), karyawanHandler.Create)
 	karyawan.PUT("/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.Update)
-	karyawan.GET("/id/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.GetByID)
-	karyawan.GET("/:id_cabang", middleware.AuthMiddleware(authService, userService), karyawanHandler.GetByIDCabang)
+	karyawan.GET("/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.GetByID)
+	karyawan.GET("/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), karyawanHandler.GetByIDCabang)
 	karyawan.DELETE("/:id", middleware.AuthMiddleware(authService, userService), karyawanHandler.Delete)
 
 	memberRepository := repository.NewMemberRepository(db)
