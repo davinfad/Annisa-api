@@ -21,7 +21,11 @@ func InitDb() (*sql.DB, error) {
 	dbPort := os.Getenv("MYSQLPORT")
 	dbName := os.Getenv("MYSQLDATABASE")
 
-	dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Asia%2FJakarta&multiStatements=true"
+	// dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Asia%2FJakarta&multiStatements=true"
+
+	dsn := dbUsername + ":" + dbPassword + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=%2B07%3A00&multiStatements=true"
+
+	// dsn := "root:@tcp(127.0.0.1:3306)/annisa?parseTime=true&loc=loc=%2B07%3A00&multiStatements=true"
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
