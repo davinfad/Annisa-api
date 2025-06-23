@@ -32,11 +32,11 @@ func NewTransaksiRepository(db *sql.DB) RepositoryTranskasi {
 func (r *repositoryTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang int) (*models.TotalMoneyResult, error) {
 	query := `
 		SELECT 
-			SUM(total_harga) AS total_money,
-			SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END) AS total_cash,
-			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer,
-			COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END) AS count_cash,
-			COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END) AS count_transfer
+			COALESCE(SUM(total_harga), 0) AS total_money,
+			COALESCE(SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END), 0) AS total_cash,
+			COALESCE(SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END), 0) AS total_transfer,
+			COALESCE(COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END), 0) AS count_cash,
+			COALESCE(COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END), 0) AS count_transfer
 		FROM transaksi 
 		WHERE DATE(created_at) = ? AND id_cabang = ? AND status = 0
 	`
@@ -50,7 +50,11 @@ func (r *repositoryTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang
 		&result.CountTransfer,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get total money by date and cabang: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			// Return all fields as 0 if no data found
+			return &models.TotalMoneyResult{}, nil
+		}
+		return nil, fmt.Errorf("failed to get total money by month and year: %w", err)
 	}
 
 	return &result, nil
@@ -59,11 +63,11 @@ func (r *repositoryTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang
 func (r *repositoryTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang int) (*models.TotalMoneyResult, error) {
 	query := `
 		SELECT 
-			SUM(total_harga) AS total_money,
-			SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END) AS total_cash,
-			SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END) AS total_transfer,
-			COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END) AS count_cash,
-			COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END) AS count_transfer
+			COALESCE(SUM(total_harga), 0) AS total_money,
+			COALESCE(SUM(CASE WHEN metode_pembayaran = 'cash' THEN total_harga ELSE 0 END), 0) AS total_cash,
+			COALESCE(SUM(CASE WHEN metode_pembayaran = 'transfer' THEN total_harga ELSE 0 END), 0) AS total_transfer,
+			COALESCE(COUNT(CASE WHEN metode_pembayaran = 'cash' THEN 1 ELSE NULL END), 0) AS count_cash,
+			COALESCE(COUNT(CASE WHEN metode_pembayaran = 'transfer' THEN 1 ELSE NULL END), 0) AS count_transfer
 		FROM transaksi 
 		WHERE MONTH(created_at) = ? AND YEAR(created_at) = ? AND id_cabang = ? AND status = 0
 	`
@@ -77,6 +81,10 @@ func (r *repositoryTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang 
 		&result.CountTransfer,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// Return all fields as 0 if no data found
+			return &models.TotalMoneyResult{}, nil
+		}
 		return nil, fmt.Errorf("failed to get total money by month and year: %w", err)
 	}
 
