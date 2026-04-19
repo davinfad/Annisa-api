@@ -10,6 +10,9 @@ import (
 type ServiceCabang interface {
 	Create(cabang *models.CabangDTO) (*models.Cabang, error)
 	GetByID(id int) (*models.Cabang, error)
+	GetAll() ([]*models.Cabang, error)
+	Update(id int, cabang *models.CabangDTO) (*models.Cabang, error)
+	Delete(id int) error
 }
 
 type serviceCabang struct {
@@ -18,6 +21,10 @@ type serviceCabang struct {
 
 func NewCabangService(repositoryCabang repository.RepositoryCabang) *serviceCabang {
 	return &serviceCabang{repositoryCabang}
+}
+
+func (s *serviceCabang) GetAll() ([]*models.Cabang, error) {
+	return s.repositoryCabang.GetAll()
 }
 
 func (s *serviceCabang) GetByID(id int) (*models.Cabang, error) {
@@ -62,4 +69,31 @@ func (s *serviceCabang) Create(cabang *models.CabangDTO) (*models.Cabang, error)
 		return nil, err
 	}
 	return create, nil
+}
+
+func (s *serviceCabang) Update(id int, cabang *models.CabangDTO) (*models.Cabang, error) {
+	layout := "15:04"
+
+	jamBukaParsed, err := time.Parse(layout, cabang.JamBuka)
+	if err != nil {
+		return nil, fmt.Errorf("invalid jam_buka: %v", err)
+	}
+
+	jamTutupParsed, err := time.Parse(layout, cabang.JamTutup)
+	if err != nil {
+		return nil, fmt.Errorf("invalid jam_tutup: %v", err)
+	}
+
+	cabang.JamBuka = time.Date(2000, time.January, 1, jamBukaParsed.Hour(), jamBukaParsed.Minute(), 0, 0, time.Local).Format("15:04:05")
+	cabang.JamTutup = time.Date(2000, time.January, 1, jamTutupParsed.Hour(), jamTutupParsed.Minute(), 0, 0, time.Local).Format("15:04:05")
+
+	return s.repositoryCabang.Update(id, cabang)
+}
+
+func (s *serviceCabang) Delete(id int) error {
+	_, err := s.repositoryCabang.GetByID(id)
+	if err != nil {
+		return fmt.Errorf("cabang not found")
+	}
+	return s.repositoryCabang.Delete(id)
 }

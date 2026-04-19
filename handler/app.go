@@ -42,6 +42,10 @@ func StartApp() {
 	cabang.POST("/", middleware.AuthMiddleware(authService, userService), cabangHandler.Create)
 	router.POST("/register/", userHandler.RegisterUser)
 	router.POST("/login/", userHandler.Login)
+	cabang.GET("/", middleware.AuthMiddleware(authService, userService), cabangHandler.GetAll)
+	cabang.GET("/:id", middleware.AuthMiddleware(authService, userService), cabangHandler.GetByID)
+	cabang.PUT("/:id", middleware.AuthMiddleware(authService, userService), cabangHandler.Update)
+	cabang.DELETE("/:id", middleware.AuthMiddleware(authService, userService), cabangHandler.Delete)
 
 	karyawanRepository := repository.NewKaryawanRepository(db)
 	karyawanService := service.NewKaryawanService(karyawanRepository)
