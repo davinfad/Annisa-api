@@ -30,7 +30,7 @@ func StartApp() {
 
 	userRepository := repository.NewUserRepository(db)
 	cabangRepository := repository.NewCabangRepository(db)
-	cabangService := service.NewCabangService(cabangRepository)
+	cabangService := service.NewCabangService(cabangRepository, userRepository)
 	userService := service.NewUserService(userRepository, cabangService)
 	authService := auth.NewUserAuthService()
 	authService.SetSecretKey(secretKey)

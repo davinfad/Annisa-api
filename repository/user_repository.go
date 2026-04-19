@@ -4,11 +4,14 @@ import (
 	"annisa-api/models"
 	"database/sql"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type RepositoryUser interface {
 	Create(user *models.User) (*models.User, error)
 	FindByUsername(username string) (*models.User, error)
+	UpdateByCabang(idCabang int, input *models.UpdateUserDTO) error
 }
 
 type userRepository struct {
@@ -85,4 +88,24 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 
 	return &user, nil
 
+}
+
+func (r *userRepository) UpdateByCabang(idCabang int, input *models.UpdateUserDTO) error {
+	if input.Password != "" {
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+		if err != nil {
+			return err
+		}
+		_, err = r.db.Exec(
+			`UPDATE users SET username=?, password=?, access_code=?, updated_at=? WHERE id_cabang=?`,
+			input.Username, string(passwordHash), input.AccessCode, time.Now(), idCabang,
+		)
+		return err
+	}
+
+	_, err := r.db.Exec(
+		`UPDATE users SET username=?, access_code=?, updated_at=? WHERE id_cabang=?`,
+		input.Username, input.AccessCode, time.Now(), idCabang,
+	)
+	return err
 }

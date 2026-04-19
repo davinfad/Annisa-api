@@ -11,16 +11,17 @@ type ServiceCabang interface {
 	Create(cabang *models.CabangDTO) (*models.Cabang, error)
 	GetByID(id int) (*models.Cabang, error)
 	GetAll() ([]*models.Cabang, error)
-	Update(id int, cabang *models.CabangDTO) (*models.Cabang, error)
+	Update(id int, cabang *models.CabangDTO, user *models.UpdateUserDTO) (*models.Cabang, error)
 	Delete(id int) error
 }
 
 type serviceCabang struct {
 	repositoryCabang repository.RepositoryCabang
+	repositoryUser   repository.RepositoryUser
 }
 
-func NewCabangService(repositoryCabang repository.RepositoryCabang) *serviceCabang {
-	return &serviceCabang{repositoryCabang}
+func NewCabangService(repositoryCabang repository.RepositoryCabang, repositoryUser repository.RepositoryUser) *serviceCabang {
+	return &serviceCabang{repositoryCabang, repositoryUser}
 }
 
 func (s *serviceCabang) GetAll() ([]*models.Cabang, error) {
@@ -71,14 +72,13 @@ func (s *serviceCabang) Create(cabang *models.CabangDTO) (*models.Cabang, error)
 	return create, nil
 }
 
-func (s *serviceCabang) Update(id int, cabang *models.CabangDTO) (*models.Cabang, error) {
+func (s *serviceCabang) Update(id int, cabang *models.CabangDTO, user *models.UpdateUserDTO) (*models.Cabang, error) {
 	layout := "15:04"
 
 	jamBukaParsed, err := time.Parse(layout, cabang.JamBuka)
 	if err != nil {
 		return nil, fmt.Errorf("invalid jam_buka: %v", err)
 	}
-
 	jamTutupParsed, err := time.Parse(layout, cabang.JamTutup)
 	if err != nil {
 		return nil, fmt.Errorf("invalid jam_tutup: %v", err)
@@ -87,7 +87,18 @@ func (s *serviceCabang) Update(id int, cabang *models.CabangDTO) (*models.Cabang
 	cabang.JamBuka = time.Date(2000, time.January, 1, jamBukaParsed.Hour(), jamBukaParsed.Minute(), 0, 0, time.Local).Format("15:04:05")
 	cabang.JamTutup = time.Date(2000, time.January, 1, jamTutupParsed.Hour(), jamTutupParsed.Minute(), 0, 0, time.Local).Format("15:04:05")
 
-	return s.repositoryCabang.Update(id, cabang)
+	updated, err := s.repositoryCabang.Update(id, cabang)
+	if err != nil {
+		return nil, err
+	}
+
+	if user != nil && user.Username != "" {
+		if err := s.repositoryUser.UpdateByCabang(id, user); err != nil {
+			return nil, err
+		}
+	}
+
+	return updated, nil
 }
 
 func (s *serviceCabang) Delete(id int) error {

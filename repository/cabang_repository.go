@@ -10,7 +10,7 @@ type RepositoryCabang interface {
 	Create(cabang *models.Cabang) (*models.Cabang, error)
 	GetByID(ID int) (*models.Cabang, error)
 	GetAll() ([]*models.Cabang, error)
-	Update(id int, cabang *models.CabangDTO) (*models.Cabang, error)
+	Update(id int, input *models.CabangDTO) (*models.Cabang, error)
 	Delete(id int) error
 	GetJamOperasional(tx *sql.Tx, idCabang int) (string, string, error)
 }
@@ -21,61 +21,6 @@ type cabangRepository struct {
 
 func NewCabangRepository(db *sql.DB) *cabangRepository {
 	return &cabangRepository{db}
-}
-
-func (r *cabangRepository) GetAll() ([]*models.Cabang, error) {
-	query := `SELECT id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at FROM cabang`
-
-	rows, err := r.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var cabangs []*models.Cabang
-	for rows.Next() {
-		var jamBukaStr, jamTutupStr string
-		c := &models.Cabang{}
-		err := rows.Scan(
-			&c.IDCabang,
-			&c.NamaCabang,
-			&c.KodeCabang,
-			&jamBukaStr,
-			&jamTutupStr,
-			&c.CreatedAt,
-			&c.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		layout := "15:04:05"
-		c.JamBuka, _ = time.Parse(layout, jamBukaStr)
-		c.JamTutup, _ = time.Parse(layout, jamTutupStr)
-		cabangs = append(cabangs, c)
-	}
-	return cabangs, nil
-}
-
-func (r *cabangRepository) Update(id int, input *models.CabangDTO) (*models.Cabang, error) {
-	query := `UPDATE cabang SET nama_cabang=?, kode_cabang=?, jam_buka=?, jam_tutup=?, updated_at=? WHERE id_cabang=?`
-
-	_, err := r.db.Exec(query,
-		input.NamaCabang,
-		input.KodeCabang,
-		input.JamBuka,
-		input.JamTutup,
-		time.Now(),
-		id,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return r.GetByID(id)
-}
-
-func (r *cabangRepository) Delete(id int) error {
-	_, err := r.db.Exec(`DELETE FROM cabang WHERE id_cabang=?`, id)
-	return err
 }
 
 func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error) {
@@ -104,20 +49,68 @@ func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error)
 	return cabang, nil
 }
 
+func (r *cabangRepository) GetAll() ([]*models.Cabang, error) {
+	query := `
+        SELECT c.id_cabang, c.nama_cabang, c.kode_cabang, c.jam_buka, c.jam_tutup, c.created_at, c.updated_at,
+               u.username, u.access_code
+        FROM cabang c
+        LEFT JOIN users u ON u.id_cabang = c.id_cabang`
+
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cabangs []*models.Cabang
+	for rows.Next() {
+		var jamBukaStr, jamTutupStr string
+		var username, accessCode sql.NullString
+		c := &models.Cabang{}
+
+		err := rows.Scan(
+			&c.IDCabang, &c.NamaCabang, &c.KodeCabang,
+			&jamBukaStr, &jamTutupStr,
+			&c.CreatedAt, &c.UpdatedAt,
+			&username, &accessCode,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		layout := "15:04:05"
+		c.JamBuka, _ = time.Parse(layout, jamBukaStr)
+		c.JamTutup, _ = time.Parse(layout, jamTutupStr)
+
+		if username.Valid {
+			c.User = &models.UserInfo{
+				Username:   username.String,
+				AccessCode: accessCode.String,
+			}
+		}
+
+		cabangs = append(cabangs, c)
+	}
+	return cabangs, nil
+}
+
 func (r *cabangRepository) GetByID(ID int) (*models.Cabang, error) {
-	query := `SELECT id_cabang, nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at FROM cabang WHERE id_cabang = ?`
+	query := `
+        SELECT c.id_cabang, c.nama_cabang, c.kode_cabang, c.jam_buka, c.jam_tutup, c.created_at, c.updated_at,
+               u.username, u.access_code
+        FROM cabang c
+        LEFT JOIN users u ON u.id_cabang = c.id_cabang
+        WHERE c.id_cabang = ?`
 
 	var jamBukaStr, jamTutupStr string
-	l := &models.Cabang{}
+	var username, accessCode sql.NullString
+	c := &models.Cabang{}
 
 	err := r.db.QueryRow(query, ID).Scan(
-		&l.IDCabang,
-		&l.NamaCabang,
-		&l.KodeCabang,
-		&jamBukaStr,
-		&jamTutupStr,
-		&l.CreatedAt,
-		&l.UpdatedAt,
+		&c.IDCabang, &c.NamaCabang, &c.KodeCabang,
+		&jamBukaStr, &jamTutupStr,
+		&c.CreatedAt, &c.UpdatedAt,
+		&username, &accessCode,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -127,10 +120,39 @@ func (r *cabangRepository) GetByID(ID int) (*models.Cabang, error) {
 	}
 
 	layout := "15:04:05"
-	l.JamBuka, _ = time.Parse(layout, jamBukaStr)
-	l.JamTutup, _ = time.Parse(layout, jamTutupStr)
+	c.JamBuka, _ = time.Parse(layout, jamBukaStr)
+	c.JamTutup, _ = time.Parse(layout, jamTutupStr)
 
-	return l, nil
+	if username.Valid {
+		c.User = &models.UserInfo{
+			Username:   username.String,
+			AccessCode: accessCode.String,
+		}
+	}
+
+	return c, nil
+}
+
+func (r *cabangRepository) Update(id int, input *models.CabangDTO) (*models.Cabang, error) {
+	query := `UPDATE cabang SET nama_cabang=?, kode_cabang=?, jam_buka=?, jam_tutup=?, updated_at=? WHERE id_cabang=?`
+
+	_, err := r.db.Exec(query,
+		input.NamaCabang,
+		input.KodeCabang,
+		input.JamBuka,
+		input.JamTutup,
+		time.Now(),
+		id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return r.GetByID(id)
+}
+
+func (r *cabangRepository) Delete(id int) error {
+	_, err := r.db.Exec(`DELETE FROM cabang WHERE id_cabang=?`, id)
+	return err
 }
 
 func (r *cabangRepository) GetJamOperasional(tx *sql.Tx, idCabang int) (string, string, error) {

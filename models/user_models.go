@@ -27,3 +27,9 @@ type UserLoginDTO struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
+
+type UpdateUserDTO struct {
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	AccessCode string `json:"access_code"`
+}
