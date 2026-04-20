@@ -12,6 +12,7 @@ type RepositoryUser interface {
 	Create(user *models.User) (*models.User, error)
 	FindByUsername(username string) (*models.User, error)
 	UpdateByCabang(idCabang int, input *models.UpdateUserDTO) error
+	DeleteByCabang(idCabang int) error
 }
 
 type userRepository struct {
@@ -107,5 +108,10 @@ func (r *userRepository) UpdateByCabang(idCabang int, input *models.UpdateUserDT
 		`UPDATE users SET username=?, access_code=?, updated_at=? WHERE id_cabang=?`,
 		input.Username, input.AccessCode, time.Now(), idCabang,
 	)
+	return err
+}
+
+func (r *userRepository) DeleteByCabang(idCabang int) error {
+	_, err := r.db.Exec(`DELETE FROM users WHERE id_cabang = ?`, idCabang)
 	return err
 }

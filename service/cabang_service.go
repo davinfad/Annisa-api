@@ -102,9 +102,14 @@ func (s *serviceCabang) Update(id int, cabang *models.CabangDTO, user *models.Up
 }
 
 func (s *serviceCabang) Delete(id int) error {
-	_, err := s.repositoryCabang.GetByID(id)
-	if err != nil {
+	cabang, err := s.repositoryCabang.GetByID(id)
+	if err != nil || cabang == nil {
 		return fmt.Errorf("cabang not found")
 	}
+
+	if err := s.repositoryUser.DeleteByCabang(id); err != nil {
+		return fmt.Errorf("gagal menghapus user: %v", err)
+	}
+
 	return s.repositoryCabang.Delete(id)
 }
