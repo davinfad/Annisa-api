@@ -89,12 +89,9 @@ func StartApp() {
 
 	router.POST("/transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.AddTransaksi)
 	router.GET("/transaksi/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
-	router.GET("/transaksi/date/:date/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByDateAndCabang)
-	router.GET("/transaksi/month/:month/year/:year/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetMonthlyTransaksiByCabang)
 	router.GET("/transaksi/draft/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetDraftTransaksiByCabang)
 	router.DELETE("/transaksi/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
-	router.GET("/money/date/:date/cabang/:id_cabang", transaksiHandler.GetTotalMoneyByDateAndCabang)
-	router.GET("/total_money/month/:month/year/:year/cabang/:id_cabang", transaksiHandler.GetTotalMoneyByMonthAndYear)
+	router.GET("/transaksi/cabang/:id_cabang", transaksiHandler.GetTransaksiByDateRange)
 
 	router.Run(":8080")
 }

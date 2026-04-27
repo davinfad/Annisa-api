@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,53 +27,6 @@ func NewHandlerTransaksi(db *sql.DB, service service.ServiceTransaksi) *HandlerT
 type TransaksiDetailResponse struct {
 	Transaksi *models.Transaksi            `json:"transaksi"`
 	Items     []models.ItemTransaksiDetail `json:"items"`
-}
-
-func (h *HandlerTransaksi) GetTotalMoneyByDateAndCabang(c *gin.Context) {
-	date := c.Param("date")
-	idCabangStr := c.Param("id_cabang")
-
-	idCabang, err := strconv.Atoi(idCabangStr)
-	if err != nil {
-		response := helper.APIresponse(http.StatusBadRequest, err.Error())
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
-
-	result, err := h.Service.GetTotalMoneyByDateAndCabang(date, idCabang)
-	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
-		c.JSON(http.StatusInternalServerError, response)
-		return
-	}
-
-	response := helper.APIresponse(http.StatusOK, result)
-	c.JSON(http.StatusOK, response)
-}
-
-func (h *HandlerTransaksi) GetTotalMoneyByMonthAndYear(c *gin.Context) {
-	monthStr := c.Param("month")
-	yearStr := c.Param("year")
-	idCabangStr := c.Param("id_cabang")
-
-	month, err1 := strconv.Atoi(monthStr)
-	year, err2 := strconv.Atoi(yearStr)
-	idCabang, err3 := strconv.Atoi(idCabangStr)
-	if err1 != nil || err2 != nil || err3 != nil {
-		response := helper.APIresponse(http.StatusBadRequest, gin.H{"error": "Invalid parameters"})
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
-
-	result, err := h.Service.GetTotalMoneyByMonthAndYear(month, year, idCabang)
-	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
-		c.JSON(http.StatusInternalServerError, response)
-		return
-	}
-
-	response := helper.APIresponse(http.StatusOK, result)
-	c.JSON(http.StatusOK, response)
 }
 
 func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
@@ -111,33 +65,44 @@ func (h *HandlerTransaksi) GetTransaksiByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *HandlerTransaksi) GetTransaksiByDateAndCabang(c *gin.Context) {
-	date := c.Param("date")
+// GET /transaksi/:id_cabang?from=2026-04-27&to=2026-04-27
+// GET /transaksi/:id_cabang?from=2026-04-01&to=2026-04-30
+func (h *HandlerTransaksi) GetTransaksiByDateRange(c *gin.Context) {
 	idCabang := toInt(c.Param("id_cabang"))
 
-	transaksis, err := h.Service.GetTransaksiByDateAndCabang(date, idCabang)
-	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
-		c.JSON(http.StatusInternalServerError, response)
+	fromStr := c.Query("from")
+	toStr := c.Query("to")
+
+	if fromStr == "" || toStr == "" {
+		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "from and to query params are required"))
 		return
 	}
-	response := helper.APIresponse(http.StatusOK, transaksis)
-	c.JSON(http.StatusOK, response)
-}
 
-func (h *HandlerTransaksi) GetMonthlyTransaksiByCabang(c *gin.Context) {
-	month := toInt(c.Param("month"))
-	year := toInt(c.Param("year"))
-	idCabang := toInt(c.Param("id_cabang"))
+	layout := "2006-01-02"
+	loc := time.FixedZone("WIB", 7*3600)
 
-	transaksis, err := h.Service.GetMonthlyTransaksiByCabang(month, year, idCabang)
+	from, err := time.ParseInLocation(layout, fromStr, loc)
 	if err != nil {
-		response := helper.APIresponse(http.StatusInternalServerError, err.Error())
-		c.JSON(http.StatusInternalServerError, response)
+		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "invalid from date"))
 		return
 	}
-	response := helper.APIresponse(http.StatusOK, transaksis)
-	c.JSON(http.StatusOK, response)
+
+	to, err := time.ParseInLocation(layout, toStr, loc)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "invalid to date"))
+		return
+	}
+
+	// set to to end of day
+	to = to.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
+
+	transaksis, err := h.Service.GetTransaksiByDateRange(idCabang, from, to)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, helper.APIresponse(http.StatusInternalServerError, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, helper.APIresponse(http.StatusOK, transaksis))
 }
 
 func (h *HandlerTransaksi) GetDraftTransaksiByCabang(c *gin.Context) {

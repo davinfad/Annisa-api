@@ -14,12 +14,9 @@ type ServiceTransaksi interface {
 	CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error)
 	UpdateKomisiKaryawan(tx *sql.Tx, items []models.ItemTransaksi, waktuTransaksi time.Time, idCabang *int) error
 	GetTransaksiByID(id int) (*models.Transaksi, error)
-	GetTransaksiByDateAndCabang(date string, idCabang int) ([]*models.Transaksi, error)
-	GetMonthlyTransaksiByCabang(month, year, idCabang int) ([]*models.Transaksi, error)
+	GetTransaksiByDateRange(idCabang int, from, to time.Time) ([]*models.Transaksi, error)
 	GetDraftTransaksiByCabang(idCabang int) ([]*models.Transaksi, error)
 	DeleteTransaksi(ctx context.Context, idTransaksi int) error
-	GetTotalMoneyByDateAndCabang(date string, idCabang int) (*models.TotalMoneyResult, error)
-	GetTotalMoneyByMonthAndYear(month, year, idCabang int) (*models.TotalMoneyResult, error)
 	GetItemTransaksiByTransaksiID(id int) ([]models.ItemTransaksiDetail, error)
 }
 
@@ -40,14 +37,6 @@ func (s *serviceTransaksi) GetItemTransaksiByTransaksiID(id int) ([]models.ItemT
 	return s.repositoryItemTransaksi.GetByTransaksiID(id)
 }
 
-func (s *serviceTransaksi) GetTotalMoneyByDateAndCabang(date string, idCabang int) (*models.TotalMoneyResult, error) {
-	return s.repositoryTransaksi.GetTotalMoneyByDateAndCabang(date, idCabang)
-}
-
-func (s *serviceTransaksi) GetTotalMoneyByMonthAndYear(month, year, idCabang int) (*models.TotalMoneyResult, error) {
-	return s.repositoryTransaksi.GetTotalMoneyByMonthAndYear(month, year, idCabang)
-}
-
 func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 	get, err := s.repositoryTransaksi.Get(id)
 	if err != nil {
@@ -59,26 +48,9 @@ func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 	return get, nil
 }
 
-func (s *serviceTransaksi) GetTransaksiByDateAndCabang(date string, idCabang int) ([]*models.Transaksi, error) {
-	get, err := s.repositoryTransaksi.GetByDateAndCabang(date, idCabang)
-	if err != nil {
-		return nil, err
-	}
-	if len(get) == 0 {
-		return nil, errors.New("no transaksi found for this date and cabang")
-	}
-	return get, nil
-}
-
-func (s *serviceTransaksi) GetMonthlyTransaksiByCabang(month, year, idCabang int) ([]*models.Transaksi, error) {
-	get, err := s.repositoryTransaksi.GetMonthlyByCabang(month, year, idCabang)
-	if err != nil {
-		return nil, err
-	}
-	if len(get) == 0 {
-		return nil, errors.New("no transaksi found for this month, year, and cabang")
-	}
-	return get, nil
+func (s *serviceTransaksi) GetTransaksiByDateRange(idCabang int, from, to time.Time) ([]*models.Transaksi, error) {
+	loc := time.FixedZone("WIB", 7*3600)
+	return s.repositoryTransaksi.GetByDateRange(idCabang, from.In(loc), to.In(loc))
 }
 
 func (s *serviceTransaksi) GetDraftTransaksiByCabang(idCabang int) ([]*models.Transaksi, error) {
