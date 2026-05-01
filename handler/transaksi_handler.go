@@ -108,7 +108,9 @@ func (h *HandlerTransaksi) GetTransaksiByDateRange(c *gin.Context) {
 	// set to to end of day
 	to = to.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
-	transaksis, err := h.Service.GetTransaksiByDateRange(idCabang, page, limit, from, to)
+	offset := (page - 1) * limit
+
+	transaksis, err := h.Service.GetTransaksiByDateRange(idCabang, offset, limit, from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, helper.APIresponse(http.StatusInternalServerError, err.Error()))
 		return

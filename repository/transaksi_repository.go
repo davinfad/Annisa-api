@@ -98,28 +98,39 @@ func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaks
 	var result []*models.Transaksi
 	for rows.Next() {
 		var t models.Transaksi
-		var idCabang sql.NullInt64
-		var idMember sql.NullInt64
-		var status sql.NullInt64
+		var nullIDCabang sql.NullInt64
+		var nullIDMember sql.NullInt64
+		var nullStatus sql.NullInt64
+
 		err := rows.Scan(
-			&t.IDTransaksi, &t.IDCabang, &t.IDMember, &t.NamaPelanggan, &t.NomorTelepon,
-			&t.TotalHarga, &t.MetodePembayaran, &t.Diskon, &t.Status, &t.CreatedAt,
+			&t.IDTransaksi,
+			&nullIDCabang,
+			&nullIDMember,
+			&t.NamaPelanggan,
+			&t.NomorTelepon,
+			&t.TotalHarga,
+			&t.MetodePembayaran,
+			&t.Diskon,
+			&nullStatus,
+			&t.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-		if idCabang.Valid {
-			val := int(idCabang.Int64)
+
+		if nullIDCabang.Valid {
+			val := int(nullIDCabang.Int64)
 			t.IDCabang = &val
 		}
-		if idMember.Valid {
-			val := int(idMember.Int64)
+		if nullIDMember.Valid {
+			val := int(nullIDMember.Int64)
 			t.IDMember = &val
 		}
-		if status.Valid {
-			val := int(status.Int64)
+		if nullStatus.Valid {
+			val := int(nullStatus.Int64)
 			t.Status = &val
 		}
+
 		result = append(result, &t)
 	}
 

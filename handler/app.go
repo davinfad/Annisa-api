@@ -87,11 +87,12 @@ func StartApp() {
 	transaksiService := service.NewTransaksiService(db, transaksiRepository, cabangRepository, itemTransaksiRepository, layananRepository, karyawanRepository)
 	transaksiHandler := NewHandlerTransaksi(db, transaksiService)
 
-	router.POST("/transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.AddTransaksi)
-	router.GET("/transaksi/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
-	router.GET("/transaksi/draft/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetDraftTransaksiByCabang)
-	router.DELETE("/transaksi/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
-	router.GET("/transaksi/cabang/:id_cabang", transaksiHandler.GetTransaksiByDateRange)
+	transaksi := router.Group("/transaksi")
+	transaksi.POST("/", middleware.AuthMiddleware(authService, userService), transaksiHandler.AddTransaksi)
+	transaksi.GET("/draft/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetDraftTransaksiByCabang)
+	transaksi.GET("/cabang/:id_cabang", transaksiHandler.GetTransaksiByDateRange)
+	transaksi.GET("/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
+	transaksi.DELETE("/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
 
 	router.Run(":8080")
 }

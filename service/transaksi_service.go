@@ -14,7 +14,7 @@ type ServiceTransaksi interface {
 	CreateTransaksi(tx *sql.Tx, req interface{}, status int) (*models.Transaksi, error)
 	UpdateKomisiKaryawan(tx *sql.Tx, items []models.ItemTransaksi, waktuTransaksi time.Time, idCabang *int) error
 	GetTransaksiByID(id int) (*models.Transaksi, error)
-	GetTransaksiByDateRange(idCabang, page, limit int, from, to time.Time) ([]*models.Transaksi, error)
+	GetTransaksiByDateRange(idCabang, offset, limit int, from, to time.Time) ([]*models.Transaksi, error)
 	GetDraftTransaksiByCabang(idCabang int) ([]*models.Transaksi, error)
 	DeleteTransaksi(ctx context.Context, idTransaksi int) error
 	GetItemTransaksiByTransaksiID(id int) ([]models.ItemTransaksiDetail, error)
@@ -48,9 +48,8 @@ func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 	return get, nil
 }
 
-func (s *serviceTransaksi) GetTransaksiByDateRange(idCabang, page, limit int, from, to time.Time) ([]*models.Transaksi, error) {
+func (s *serviceTransaksi) GetTransaksiByDateRange(idCabang, offset, limit int, from, to time.Time) ([]*models.Transaksi, error) {
 	loc := time.FixedZone("WIB", 7*3600)
-	offset := (page - 1) * limit
 	return s.repositoryTransaksi.GetByDateRange(idCabang, from.In(loc), to.In(loc), offset, limit)
 }
 
