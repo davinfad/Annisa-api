@@ -72,10 +72,22 @@ func (h *HandlerTransaksi) GetTransaksiByDateRange(c *gin.Context) {
 
 	fromStr := c.Query("from")
 	toStr := c.Query("to")
+	page := toInt(c.DefaultQuery("page", "1"))
+	limit := toInt(c.DefaultQuery("limit", "20"))
 
 	if fromStr == "" || toStr == "" {
 		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "from and to query params are required"))
 		return
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
 	}
 
 	layout := "2006-01-02"
@@ -96,13 +108,18 @@ func (h *HandlerTransaksi) GetTransaksiByDateRange(c *gin.Context) {
 	// set to to end of day
 	to = to.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
-	transaksis, err := h.Service.GetTransaksiByDateRange(idCabang, from, to)
+	transaksis, err := h.Service.GetTransaksiByDateRange(idCabang, page, limit, from, to)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, helper.APIresponse(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, helper.APIresponse(http.StatusOK, transaksis))
+	response := helper.APIresponse(http.StatusOK, gin.H{
+		"page":  page,
+		"limit": limit,
+		"data":  transaksis,
+	})
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *HandlerTransaksi) GetDraftTransaksiByCabang(c *gin.Context) {

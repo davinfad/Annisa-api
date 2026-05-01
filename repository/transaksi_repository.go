@@ -13,7 +13,7 @@ type RepositoryTranskasi interface {
 	GetAll() ([]*models.Transaksi, error)
 	GetTx(tx *sql.Tx, id int) (*models.Transaksi, error)
 	DeleteTx(tx *sql.Tx, id int) error
-	GetByDateRange(idCabang int, from, to time.Time) ([]*models.Transaksi, error)
+	GetByDateRange(idCabang int, from, to time.Time, offset, limit int) ([]*models.Transaksi, error)
 	GetDraftByCabang(idCabang int) ([]*models.Transaksi, error)
 }
 
@@ -25,15 +25,16 @@ func NewTransaksiRepository(db *sql.DB) RepositoryTranskasi {
 	return &repositoryTransaksi{db}
 }
 
-func (r *repositoryTransaksi) GetByDateRange(idCabang int, from, to time.Time) ([]*models.Transaksi, error) {
+func (r *repositoryTransaksi) GetByDateRange(idCabang int, from, to time.Time, offset, limit int) ([]*models.Transaksi, error) {
 	query := `
         SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, diskon, status, created_at
         FROM transaksi
         WHERE id_cabang = ? AND created_at BETWEEN ? AND ?
         ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
     `
 
-	rows, err := r.db.Query(query, idCabang, from, to)
+	rows, err := r.db.Query(query, idCabang, from, to, limit, offset)
 	if err != nil {
 		return nil, err
 	}
