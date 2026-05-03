@@ -146,7 +146,7 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		return
 	}
 
-	if req.TotalHarga == 0 || req.MetodePembayaran == "" || req.IDCabang == nil || len(req.Items) == 0 {
+	if (req.TotalHarga == 0 && (req.Diskon == nil || *req.Diskon != 100)) || req.MetodePembayaran == "" || req.IDCabang == nil || len(req.Items) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required fields!"})
 		return
 	}
