@@ -91,8 +91,8 @@ func (h *memberHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	// response := helper.APIresponse(http.StatusOK, val)
-	c.JSON(http.StatusOK, val)
+	response := helper.APIresponse(http.StatusOK, val)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *memberHandler) GetMemberByIDCabang(c *gin.Context) {
