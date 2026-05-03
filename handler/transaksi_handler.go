@@ -211,12 +211,15 @@ func (h *HandlerTransaksi) DeleteTransaksi(c *gin.Context) {
 	err = h.Service.DeleteTransaksi(c.Request.Context(), idTransaksi)
 	if err != nil {
 		if err.Error() == "transaction not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			response := helper.APIresponse(http.StatusNotFound, gin.H{"error": err.Error()})
+			c.JSON(http.StatusNotFound, response)
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			response := helper.APIresponse(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, response)
 		}
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Transaction and its items deleted successfully"})
+	response := helper.APIresponse(http.StatusOK, gin.H{"message": "Transaction and its items deleted successfully"})
+	c.JSON(http.StatusOK, response)
 }
