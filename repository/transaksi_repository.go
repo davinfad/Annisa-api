@@ -29,7 +29,7 @@ func (r *repositoryTransaksi) GetByDateRange(idCabang int, from, to time.Time, o
 	query := `
         SELECT id_transaksi, id_cabang, id_member, nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, diskon, status, created_at
         FROM transaksi
-        WHERE id_cabang = ? AND created_at BETWEEN ? AND ?
+        WHERE id_cabang = ? AND created_at BETWEEN ? AND ? AND status = 0
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
     `
