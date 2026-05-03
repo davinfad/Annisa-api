@@ -24,7 +24,6 @@ func NewCabangRepository(db *sql.DB) *cabangRepository {
 }
 
 func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error) {
-	now := time.Now()
 	query := `INSERT INTO cabang (nama_cabang, kode_cabang, jam_buka, jam_tutup, created_at, updated_at)
 			  VALUES (?, ?, ?, ?, ?, ?)`
 
@@ -38,8 +37,8 @@ func (r *cabangRepository) Create(cabang *models.Cabang) (*models.Cabang, error)
 		cabang.KodeCabang,
 		formattedJamBuka,
 		formattedJamTutup,
-		now,
-		now,
+		cabang.CreatedAt,
+		cabang.UpdatedAt,
 	)
 	if err != nil {
 		return cabang, err

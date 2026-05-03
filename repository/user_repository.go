@@ -29,16 +29,14 @@ func (r *userRepository) Create(user *models.User) (*models.User, error) {
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
-	now := time.Now()
-
 	_, err := r.db.Exec(
 		query,
 		user.Username,
 		user.Password,
 		user.AccessCode,
 		user.IDCabang,
-		now,
-		now,
+		user.CreatedAt,
+		user.UpdatedAt,
 	)
 
 	return user, err

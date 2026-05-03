@@ -4,7 +4,6 @@ import (
 	"annisa-api/models"
 	"database/sql"
 	"fmt"
-	"time"
 )
 
 type RepositoryKaryawan interface {
@@ -34,8 +33,6 @@ func (r *repositoryKaryawan) Create(karyawan *models.Karyawan) (*models.Karyawan
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
-	now := time.Now()
-
 	result, err := r.db.Exec(query,
 		karyawan.NamaKaryawan,
 		karyawan.IDCabang,
@@ -43,8 +40,8 @@ func (r *repositoryKaryawan) Create(karyawan *models.Karyawan) (*models.Karyawan
 		karyawan.Alamat,
 		karyawan.Komisi,
 		karyawan.KomisiHarian,
-		now,
-		now,
+		karyawan.CreatedAt,
+		karyawan.UpdatedAt,
 	)
 
 	if err != nil {
@@ -132,14 +129,12 @@ func (r *repositoryKaryawan) Update(karyawan *models.Karyawan) (*models.Karyawan
 		WHERE id_karyawan = ?
 	`
 
-	now := time.Now()
-
 	_, err := r.db.Exec(query,
 		karyawan.NamaKaryawan,
 		karyawan.IDCabang,
 		karyawan.NomorTelepon,
 		karyawan.Alamat,
-		now,
+		karyawan.UpdatedAt,
 		karyawan.IDKaryawan,
 	)
 

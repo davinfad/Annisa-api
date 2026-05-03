@@ -40,6 +40,9 @@ func (s *serviceMember) Create(input *models.CreateMemberDTO) (*models.Member, e
 		return nil, errors.New("invalid tanggal_daftar format, expected YYYY-MM-DD")
 	}
 
+	loc := time.FixedZone("WIB", 7*3600)
+	now := time.Now().In(loc)
+
 	member := &models.Member{
 		NomorPelanggan: input.NomorPelanggan,
 		NamaMember:     input.NamaMember,
@@ -48,8 +51,8 @@ func (s *serviceMember) Create(input *models.CreateMemberDTO) (*models.Member, e
 		TanggalLahir:   tglLahir,
 		TanggalDaftar:  tglDaftar,
 		IDCabang:       input.IDCabang,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	}
 
 	return s.repositoryMember.Create(member)
@@ -115,7 +118,8 @@ func (s *serviceMember) Update(ID int, input *models.CreateMemberDTO) (*models.M
 	existing.TanggalLahir = tglLahir
 	existing.TanggalDaftar = tglDaftar
 	existing.IDCabang = input.IDCabang
-	existing.UpdatedAt = time.Now()
+	loc := time.FixedZone("WIB", 7*3600)
+	existing.UpdatedAt = time.Now().In(loc)
 
 	return s.repositoryMember.Update(existing)
 }

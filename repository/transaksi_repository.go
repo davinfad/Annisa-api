@@ -142,8 +142,7 @@ func (r *repositoryTransaksi) CreateTx(tx *sql.Tx, t *models.Transaksi) (int64, 
 		INSERT INTO transaksi (nama_pelanggan, nomor_telepon, total_harga, metode_pembayaran, id_member, id_cabang, status, diskon, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	now := time.Now()
-	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, t.Diskon, now)
+	result, err := tx.Exec(query, t.NamaPelanggan, t.NomorTelepon, t.TotalHarga, t.MetodePembayaran, t.IDMember, t.IDCabang, t.Status, t.Diskon, t.CreatedAt)
 	if err != nil {
 		return 0, err
 	}

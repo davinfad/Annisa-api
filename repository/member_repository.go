@@ -3,7 +3,6 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
-	"time"
 )
 
 type RepositoryMember interface {
@@ -29,10 +28,9 @@ func (r *repositoryMember) Create(m *models.Member) (*models.Member, error) {
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
-	now := time.Now()
 	result, err := r.db.Exec(query,
 		m.NomorPelanggan, m.NamaMember, m.NomorTelepon, m.Alamat,
-		m.TanggalLahir, m.TanggalDaftar, m.IDCabang, now, now,
+		m.TanggalLahir, m.TanggalDaftar, m.IDCabang, m.CreatedAt, m.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -44,8 +42,6 @@ func (r *repositoryMember) Create(m *models.Member) (*models.Member, error) {
 	}
 
 	m.IDMember = int(lastID)
-	m.CreatedAt = now
-	m.UpdatedAt = now
 	return m, nil
 }
 
@@ -108,16 +104,14 @@ func (r *repositoryMember) Update(m *models.Member) (*models.Member, error) {
 		WHERE id_member = ?
 	`
 
-	now := time.Now()
 	_, err := r.db.Exec(query,
 		m.NomorPelanggan, m.NamaMember, m.NomorTelepon, m.Alamat,
-		m.TanggalLahir, m.TanggalDaftar, m.IDCabang, now, m.IDMember,
+		m.TanggalLahir, m.TanggalDaftar, m.IDCabang, m.UpdatedAt, m.IDMember,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	m.UpdatedAt = now
 	return m, nil
 }
 

@@ -24,13 +24,16 @@ func NewLayananService(repositoryLayanan repository.RepositoryLayanan) ServiceLa
 }
 
 func (s *serviceLayanan) Create(input *models.CreateLayananDTO) (*models.Layanan, error) {
+	loc := time.FixedZone("WIB", 7*3600)
+	now := time.Now().In(loc)
+
 	layanan := &models.Layanan{
 		NamaLayanan:         input.NamaLayanan,
 		PersenKomisi:        input.PersenKomisi,
 		PersenKomisiLuarJam: input.PersenKomisiLuarJam,
 		Kategori:            input.Kategori,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
+		CreatedAt:           now,
+		UpdatedAt:           now,
 	}
 
 	return s.repositoryLayanan.Create(layanan)
@@ -80,7 +83,8 @@ func (s *serviceLayanan) Update(ID int, input *models.CreateLayananDTO) (*models
 	existing.PersenKomisi = input.PersenKomisi
 	existing.PersenKomisiLuarJam = input.PersenKomisiLuarJam
 	existing.Kategori = input.Kategori
-	existing.UpdatedAt = time.Now()
+	loc := time.FixedZone("WIB", 7*3600)
+	existing.UpdatedAt = time.Now().In(loc)
 
 	return s.repositoryLayanan.Update(existing)
 }

@@ -4,6 +4,7 @@ import (
 	"annisa-api/models"
 	"annisa-api/repository"
 	"errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -47,11 +48,16 @@ func (s *serviceUser) RegisterUser(inputUser models.UserRegisterDTO) (*models.Us
 		return nil, err
 	}
 
+	loc := time.FixedZone("WIB", 7*3600)
+	now := time.Now().In(loc)
+
 	user := &models.User{
 		Username:   inputUser.Username,
 		Password:   string(passwordHash),
 		AccessCode: inputUser.AccessCode,
 		IDCabang:   idCabang,
+		CreatedAt:  now,
+		UpdatedAt:  now,
 	}
 
 	_, err = s.repositoryUser.Create(user)

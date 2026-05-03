@@ -3,7 +3,6 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
-	"time"
 )
 
 type RepositoryLayanan interface {
@@ -37,15 +36,13 @@ func (r *repositoryLayanan) Create(layanan *models.Layanan) (*models.Layanan, er
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
-	now := time.Now()
-
 	result, err := r.db.Exec(query,
 		layanan.NamaLayanan,
 		layanan.PersenKomisi,
 		layanan.PersenKomisiLuarJam,
 		layanan.Kategori,
-		now,
-		now,
+		layanan.CreatedAt,
+		layanan.UpdatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -126,16 +123,14 @@ func (r *repositoryLayanan) Update(l *models.Layanan) (*models.Layanan, error) {
 		WHERE id_layanan = ?
 	`
 
-	now := time.Now()
 	_, err := r.db.Exec(query,
 		l.NamaLayanan, l.PersenKomisi, l.PersenKomisiLuarJam,
-		l.Kategori, now, l.IDLayanan,
+		l.Kategori, l.UpdatedAt, l.IDLayanan,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	l.UpdatedAt = now
 	return l, nil
 }
 

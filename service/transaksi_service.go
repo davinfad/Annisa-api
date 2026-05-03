@@ -100,7 +100,8 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 		return fmt.Errorf("failed to get branch working hours: %w", err)
 	}
 
-	today := time.Now().Truncate(24 * time.Hour)
+	loc := time.FixedZone("WIB", 7*3600)
+	today := time.Now().In(loc).Truncate(24 * time.Hour)
 	transactionDate := trx.CreatedAt.Truncate(24 * time.Hour)
 	isToday := today.Equal(transactionDate)
 

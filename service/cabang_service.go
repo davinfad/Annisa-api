@@ -56,13 +56,16 @@ func (s *serviceCabang) Create(cabang *models.CabangDTO) (*models.Cabang, error)
 	jamBuka := time.Date(2000, time.January, 1, jamBukaParsed.Hour(), jamBukaParsed.Minute(), 0, 0, time.Local)
 	jamTutup := time.Date(2000, time.January, 1, jamTutupParsed.Hour(), jamTutupParsed.Minute(), 0, 0, time.Local)
 
+	loc := time.FixedZone("WIB", 7*3600)
+	now := time.Now().In(loc)
+
 	input := &models.Cabang{
 		NamaCabang: cabang.NamaCabang,
 		KodeCabang: cabang.KodeCabang,
 		JamBuka:    jamBuka,
 		JamTutup:   jamTutup,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		CreatedAt:  now,
+		UpdatedAt:  now,
 	}
 
 	create, err := s.repositoryCabang.Create(input)

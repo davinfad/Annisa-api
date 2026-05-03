@@ -26,6 +26,9 @@ func NewKaryawanService(repositoryKaryawan repository.RepositoryKaryawan) *servi
 }
 
 func (s *serviceKaryawan) Create(karyawan *models.CreateKaryawanDTO) (*models.Karyawan, error) {
+	loc := time.FixedZone("WIB", 7*3600)
+	now := time.Now().In(loc)
+
 	val := &models.Karyawan{
 		NamaKaryawan: karyawan.NamaKaryawan,
 		IDCabang:     karyawan.IDCabang,
@@ -33,6 +36,8 @@ func (s *serviceKaryawan) Create(karyawan *models.CreateKaryawanDTO) (*models.Ka
 		Alamat:       karyawan.Alamat,
 		Komisi:       karyawan.Komisi,
 		KomisiHarian: karyawan.KomisiHarian,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 	newVal, err := s.repositoryKaryawan.Create(val)
 	if err != nil {
@@ -81,6 +86,8 @@ func (s *serviceKaryawan) Update(ID int, input *models.CreateKaryawanDTO) (*mode
 	getID.Alamat = input.Alamat
 	getID.Komisi = input.Komisi
 	getID.KomisiHarian = input.KomisiHarian
+	loc := time.FixedZone("WIB", 7*3600)
+	getID.UpdatedAt = time.Now().In(loc)
 
 	update, err := s.repositoryKaryawan.Update(getID)
 	if err != nil {
