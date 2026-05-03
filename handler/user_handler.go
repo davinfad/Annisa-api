@@ -97,6 +97,7 @@ func (h *userHandler) Login(c *gin.Context) {
 		"token":       token,
 		"id_cabang":   loggedinUser.IDCabang,
 		"nama_cabang": loggedinUser.Cabangs.NamaCabang,
+		"kode_cabang": loggedinUser.Cabangs.KodeCabang,
 		"access_code": loggedinUser.AccessCode,
 	}
 
