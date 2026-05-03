@@ -183,6 +183,10 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 		t.Status = &val
 	}
 
+	// Convert UTC time to WIB
+	loc := time.FixedZone("WIB", 7*3600)
+	t.CreatedAt = t.CreatedAt.In(loc)
+
 	return t, nil
 }
 
@@ -216,6 +220,9 @@ func (r *repositoryTransaksi) GetAll() ([]*models.Transaksi, error) {
 		if err != nil {
 			return nil, err
 		}
+		// Convert UTC time to WIB
+		loc := time.FixedZone("WIB", 7*3600)
+		t.CreatedAt = t.CreatedAt.In(loc)
 		transaksis = append(transaksis, t)
 	}
 
@@ -229,6 +236,9 @@ func (r *repositoryTransaksi) GetTx(tx *sql.Tx, id int) (*models.Transaksi, erro
 	if err != nil {
 		return nil, err
 	}
+	// Convert UTC time to WIB
+	loc := time.FixedZone("WIB", 7*3600)
+	t.CreatedAt = t.CreatedAt.In(loc)
 	t.IDTransaksi = id
 	return &t, nil
 }

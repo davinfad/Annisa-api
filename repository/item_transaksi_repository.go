@@ -3,6 +3,7 @@ package repository
 import (
 	"annisa-api/models"
 	"database/sql"
+	"time"
 )
 
 type RepositoryItemTransaksi interface {
@@ -95,6 +96,9 @@ func (r *repositoryItemTransaksi) GetByTransaksiID(ID int) ([]models.ItemTransak
 		if err != nil {
 			return nil, err
 		}
+		// Convert UTC time to WIB
+		loc := time.FixedZone("WIB", 7*3600)
+		item.CreatedAt = item.CreatedAt.In(loc)
 		items = append(items, item)
 	}
 	return items, nil
