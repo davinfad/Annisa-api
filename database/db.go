@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -34,6 +35,11 @@ func InitDb() (*sql.DB, error) {
 		log.Fatal("DB Ping Error:", err)
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	query := `
 	CREATE TABLE IF NOT EXISTS cabang (
 		id_cabang INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -145,18 +151,18 @@ func InitDb() (*sql.DB, error) {
     ADD COLUMN IF NOT EXISTS updated_at DATETIME NOT NULL DEFAULT NOW();
 	`
 
-	_, err = db.Exec(queryAlter)
-	if err != nil {
-		log.Printf("Warning: could not alter users table (might already exist): %v", err)
-	} else {
-		log.Println("Table altered (access_code added if needed).")
-	}
-
 	_, err = db.Exec(query)
 	if err != nil {
 		log.Fatalf("Error creating tables: %v", err)
 	}
 	log.Println("Tables created or already exist.")
+
+	_, err = db.Exec(queryAlter)
+	if err != nil {
+		log.Printf("Warning: could not alter tables (columns might already exist): %v", err)
+	} else {
+		log.Println("Tables altered successfully.")
+	}
 
 	return db, nil
 }
