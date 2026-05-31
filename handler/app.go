@@ -94,5 +94,9 @@ func StartApp() {
 	transaksi.GET("/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
 	transaksi.DELETE("/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
 
-	router.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	router.Run(":" + port)
 }
