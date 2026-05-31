@@ -95,6 +95,7 @@ func InitDb() (*sql.DB, error) {
 		nama_pelanggan VARCHAR(255) NOT NULL,
 		nomor_telepon VARCHAR(20) NOT NULL,
 		total_harga DECIMAL(10,2) NOT NULL,
+		diskon DECIMAL(5,2),
 		metode_pembayaran VARCHAR(50) NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		status TINYINT DEFAULT 0,
@@ -118,37 +119,12 @@ func InitDb() (*sql.DB, error) {
 	CREATE TABLE IF NOT EXISTS users (
 		username VARCHAR(255) NOT NULL PRIMARY KEY,
 		password VARCHAR(255) NOT NULL,
+		access_code VARCHAR(15),
 		id_cabang INT,
 		created_at DATETIME NOT NULL,
 		updated_at DATETIME NOT NULL,
 		FOREIGN KEY (id_cabang) REFERENCES cabang(id_cabang)
 	);
-	`
-
-	queryAlter := `
-    ALTER TABLE users
-    ADD COLUMN access_code VARCHAR(15),
-    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
-    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();
-
-    ALTER TABLE transaksi
-    ADD COLUMN diskon DECIMAL(5,2);
-
-    ALTER TABLE cabang
-    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
-    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();
-
-    ALTER TABLE karyawan
-    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
-    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();
-
-    ALTER TABLE layanan
-    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
-    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();
-
-    ALTER TABLE member
-    ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW(),
-    ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW();
 	`
 
 	_, err = db.Exec(query)
@@ -157,11 +133,24 @@ func InitDb() (*sql.DB, error) {
 	}
 	log.Println("Tables created or already exist.")
 
-	_, err = db.Exec(queryAlter)
-	if err != nil {
-		log.Printf("Warning: could not alter tables (columns might already exist): %v", err)
-	} else {
-		log.Println("Tables altered successfully.")
+	migrations := []string{
+		`ALTER TABLE users ADD COLUMN access_code VARCHAR(15)`,
+		`ALTER TABLE users ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE users ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE transaksi ADD COLUMN diskon DECIMAL(5,2)`,
+		`ALTER TABLE cabang ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE cabang ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE karyawan ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE karyawan ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE layanan ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE layanan ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE member ADD COLUMN created_at DATETIME NOT NULL DEFAULT NOW()`,
+		`ALTER TABLE member ADD COLUMN updated_at DATETIME NOT NULL DEFAULT NOW()`,
+	}
+	for _, m := range migrations {
+		if _, err := db.Exec(m); err != nil {
+			log.Printf("Migration skipped (column likely exists): %v", err)
+		}
 	}
 
 	return db, nil

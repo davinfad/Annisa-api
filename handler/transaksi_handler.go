@@ -91,15 +91,16 @@ func (h *HandlerTransaksi) GetTransaksiByDateRange(c *gin.Context) {
 	}
 
 	layout := "2006-01-02"
-	loc := time.FixedZone("WIB", 7*3600)
 
-	from, err := time.ParseInLocation(layout, fromStr, loc)
+	// created_at is stored as WIB wall-clock; parse the bounds as plain
+	// wall-clock (UTC-tagged, no offset) so the BETWEEN compares like-for-like.
+	from, err := time.Parse(layout, fromStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "invalid from date"))
 		return
 	}
 
-	to, err := time.ParseInLocation(layout, toStr, loc)
+	to, err := time.Parse(layout, toStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, helper.APIresponse(http.StatusBadRequest, "invalid to date"))
 		return
@@ -187,6 +188,9 @@ func (h *HandlerTransaksi) AddTransaksi(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
+
+	// Emit true UTC ("...Z") to match every other endpoint and the app's parser.
+	transaksi.CreatedAt = helper.WIBStoredToUTC(transaksi.CreatedAt)
 
 	response := helper.APIresponse(http.StatusOK, transaksi)
 	c.JSON(http.StatusOK, response)

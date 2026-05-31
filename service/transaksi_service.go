@@ -1,6 +1,7 @@
 package service
 
 import (
+	"annisa-api/helper"
 	"annisa-api/models"
 	"annisa-api/repository"
 	"context"
@@ -49,8 +50,9 @@ func (s *serviceTransaksi) GetTransaksiByID(id int) (*models.Transaksi, error) {
 }
 
 func (s *serviceTransaksi) GetTransaksiByDateRange(idCabang, offset, limit int, from, to time.Time) ([]*models.Transaksi, error) {
-	loc := time.FixedZone("WIB", 7*3600)
-	return s.repositoryTransaksi.GetByDateRange(idCabang, from.In(loc), to.In(loc), offset, limit)
+	// from/to are already WIB wall-clock bounds (parsed in the handler); the
+	// stored created_at is WIB wall-clock too, so compare them directly.
+	return s.repositoryTransaksi.GetByDateRange(idCabang, from, to, offset, limit)
 }
 
 func (s *serviceTransaksi) GetDraftTransaksiByCabang(idCabang int) ([]*models.Transaksi, error) {
@@ -151,8 +153,9 @@ func (s *serviceTransaksi) CreateTransaksi(tx *sql.Tx, req interface{}, status i
 		return nil, errors.New("cabang not found or fail geting operating hours")
 	}
 
-	loc := time.FixedZone("WIB", 7*3600)
-	now := time.Now().In(loc)
+	// Persist as WIB wall-clock to stay consistent with existing data; its
+	// formatted clock is also the correct WIB local time for commission checks.
+	now := helper.NowWIBStore()
 
 	var diskon float64
 	if transaksiReq.Diskon != nil {

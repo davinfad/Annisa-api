@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"annisa-api/helper"
 	"annisa-api/models"
 	"database/sql"
 	"errors"
@@ -76,6 +77,8 @@ func (r *repositoryTransaksi) GetByDateRange(idCabang int, from, to time.Time, o
 			t.Status = &val
 		}
 
+		// Stored as WIB wall-clock; emit true UTC so the app's UTC->WIB display is correct.
+		t.CreatedAt = helper.WIBStoredToUTC(t.CreatedAt)
 		result = append(result, &t)
 	}
 
@@ -131,6 +134,8 @@ func (r *repositoryTransaksi) GetDraftByCabang(idCabang int) ([]*models.Transaks
 			t.Status = &val
 		}
 
+		// Stored as WIB wall-clock; emit true UTC so the app's UTC->WIB display is correct.
+		t.CreatedAt = helper.WIBStoredToUTC(t.CreatedAt)
 		result = append(result, &t)
 	}
 
@@ -183,9 +188,8 @@ func (r *repositoryTransaksi) Get(ID int) (*models.Transaksi, error) {
 		t.Status = &val
 	}
 
-	// Convert UTC time to WIB
-	loc := time.FixedZone("WIB", 7*3600)
-	t.CreatedAt = t.CreatedAt.In(loc)
+	// Stored as WIB wall-clock; emit true UTC so the app's UTC->WIB display is correct.
+	t.CreatedAt = helper.WIBStoredToUTC(t.CreatedAt)
 
 	return t, nil
 }
@@ -220,9 +224,8 @@ func (r *repositoryTransaksi) GetAll() ([]*models.Transaksi, error) {
 		if err != nil {
 			return nil, err
 		}
-		// Convert UTC time to WIB
-		loc := time.FixedZone("WIB", 7*3600)
-		t.CreatedAt = t.CreatedAt.In(loc)
+		// Stored as WIB wall-clock; emit true UTC so the app's UTC->WIB display is correct.
+		t.CreatedAt = helper.WIBStoredToUTC(t.CreatedAt)
 		transaksis = append(transaksis, t)
 	}
 
