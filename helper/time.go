@@ -16,6 +16,14 @@ func WIBStoredToUTC(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), wibLoc).UTC()
 }
 
+// WIBStoredToWall reinterprets a created_at value read from the DB — whose
+// wall-clock digits are actually WIB but were tagged UTC by the driver — as a
+// WIB-zoned time. Use it for local-time logic (business hours, "same day")
+// so the clock fields and calendar date match the original transaction.
+func WIBStoredToWall(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), wibLoc)
+}
+
 // NowWIBStore returns the current time as a value that the driver will persist
 // as WIB wall-clock digits (e.g. "15:59"), keeping new rows consistent with the
 // existing WIB-stored data. Its formatted clock is also the correct WIB local

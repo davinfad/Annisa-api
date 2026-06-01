@@ -239,9 +239,9 @@ func (r *repositoryTransaksi) GetTx(tx *sql.Tx, id int) (*models.Transaksi, erro
 	if err != nil {
 		return nil, err
 	}
-	// Convert UTC time to WIB
-	loc := time.FixedZone("WIB", 7*3600)
-	t.CreatedAt = t.CreatedAt.In(loc)
+	// created_at is WIB wall-clock; expose it as WIB-zoned for local-time logic
+	// (business hours / same-day checks) in the commission reversal.
+	t.CreatedAt = helper.WIBStoredToWall(t.CreatedAt)
 	t.IDTransaksi = id
 	return &t, nil
 }

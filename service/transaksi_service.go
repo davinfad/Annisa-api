@@ -102,16 +102,15 @@ func (s *serviceTransaksi) DeleteTransaksi(ctx context.Context, idTransaksi int)
 		return fmt.Errorf("failed to get branch working hours: %w", err)
 	}
 
+	// trx.CreatedAt is WIB-zoned wall-clock (see repository.GetTx). Mirror the
+	// add-side logic in UpdateKomisiKaryawan exactly so the reversed amount and
+	// the daily/monthly buckets match what was originally credited.
 	loc := time.FixedZone("WIB", 7*3600)
-	today := time.Now().In(loc).Truncate(24 * time.Hour)
-	transactionDate := trx.CreatedAt.Truncate(24 * time.Hour)
-	isToday := today.Equal(transactionDate)
+	now := time.Now().In(loc)
+	isToday := trx.CreatedAt.Year() == now.Year() && trx.CreatedAt.YearDay() == now.YearDay()
 
-	layout := "15:04:05"
-	openingTime, _ := time.Parse(layout, jamBuka)
-	closingTime, _ := time.Parse(layout, jamTutup)
-	tTime := trx.CreatedAt
-	isOutside := tTime.Hour() < openingTime.Hour() || tTime.Hour() > closingTime.Hour()
+	jam := trx.CreatedAt.Format("15:04:05")
+	isOutside := jam < jamBuka || jam > jamTutup
 
 	items, err := s.repositoryItemTransaksi.GetByTransaksiIDTx(tx, idTransaksi)
 	if err != nil {
