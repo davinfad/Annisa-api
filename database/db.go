@@ -125,6 +125,19 @@ func InitDb() (*sql.DB, error) {
 		updated_at DATETIME NOT NULL,
 		FOREIGN KEY (id_cabang) REFERENCES cabang(id_cabang)
 	);
+
+	CREATE TABLE IF NOT EXISTS inventory (
+		id_inventory INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		id_cabang INT NOT NULL,
+		nama_item VARCHAR(255) NOT NULL,
+		batas_bawah INT NOT NULL DEFAULT 0,
+		batas_atas INT NOT NULL DEFAULT 0,
+		stok INT NOT NULL DEFAULT 0,
+		satuan VARCHAR(50) NOT NULL,
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL,
+		FOREIGN KEY (id_cabang) REFERENCES cabang(id_cabang)
+	);
 	`
 
 	_, err = db.Exec(query)

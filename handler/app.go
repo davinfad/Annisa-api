@@ -94,6 +94,18 @@ func StartApp() {
 	transaksi.GET("/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
 	transaksi.DELETE("/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
 
+	inventoryRepository := repository.NewInventoryRepository(db)
+	inventoryService := service.NewInventoryService(inventoryRepository)
+	inventoryHandler := NewInventoryHandler(inventoryService)
+
+	inventory := router.Group("/inventory")
+	inventory.POST("/", middleware.AuthMiddleware(authService, userService), inventoryHandler.Create)
+	inventory.PUT("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.Update)
+	inventory.GET("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.GetByID)
+	inventory.GET("/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), inventoryHandler.GetByCabang)
+	inventory.DELETE("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.Delete)
+	inventory.PATCH("/:id/stok", middleware.AuthMiddleware(authService, userService), inventoryHandler.AdjustStok)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
