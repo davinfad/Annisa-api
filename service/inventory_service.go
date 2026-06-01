@@ -8,123 +8,52 @@ import (
 )
 
 type ServiceInventory interface {
-	Create(input *models.CreateInventoryDTO) (*models.Inventory, error)
-	GetByID(ID int) (*models.Inventory, error)
-	GetByCabang(idCabang int) ([]*models.Inventory, error)
-	Update(ID int, input *models.CreateInventoryDTO) (*models.Inventory, error)
-	Delete(ID int) (*models.Inventory, error)
-	AdjustStok(ID, delta int) (*models.Inventory, error)
+	GetByCabang(idCabang int) ([]*models.InventoryStokView, error)
+	AdjustStok(idCabang, idItem, delta int) (*models.Inventory, error)
+	SetStok(idCabang, idItem, stok int) (*models.Inventory, error)
 }
 
 type serviceInventory struct {
 	repositoryInventory repository.RepositoryInventory
+	repositoryItem      repository.RepositoryItem
 }
 
-func NewInventoryService(repositoryInventory repository.RepositoryInventory) ServiceInventory {
-	return &serviceInventory{repositoryInventory}
+func NewInventoryService(repositoryInventory repository.RepositoryInventory, repositoryItem repository.RepositoryItem) ServiceInventory {
+	return &serviceInventory{repositoryInventory, repositoryItem}
 }
 
 func nowWIB() time.Time {
 	return time.Now().In(time.FixedZone("WIB", 7*3600))
 }
 
-func validateBatas(batasBawah, batasAtas, stok int) error {
-	if batasBawah < 0 || batasAtas < 0 || stok < 0 {
-		return errors.New("batas_bawah, batas_atas, and stok cannot be negative")
-	}
-	if batasAtas > 0 && batasBawah > batasAtas {
-		return errors.New("batas_bawah cannot be greater than batas_atas")
-	}
-	return nil
-}
-
-func (s *serviceInventory) Create(input *models.CreateInventoryDTO) (*models.Inventory, error) {
-	if err := validateBatas(input.BatasBawah, input.BatasAtas, input.Stok); err != nil {
-		return nil, err
-	}
-
-	now := nowWIB()
-	inv := &models.Inventory{
-		IDCabang:   input.IDCabang,
-		NamaItem:   input.NamaItem,
-		BatasBawah: input.BatasBawah,
-		BatasAtas:  input.BatasAtas,
-		Stok:       input.Stok,
-		Satuan:     input.Satuan,
-		CreatedAt:  now,
-		UpdatedAt:  now,
-	}
-
-	return s.repositoryInventory.Create(inv)
-}
-
-func (s *serviceInventory) GetByID(ID int) (*models.Inventory, error) {
-	inv, err := s.repositoryInventory.GetByID(ID)
-	if err != nil {
-		return nil, err
-	}
-	if inv == nil {
-		return nil, errors.New("inventory not found")
-	}
-	return inv, nil
-}
-
-func (s *serviceInventory) GetByCabang(idCabang int) ([]*models.Inventory, error) {
+func (s *serviceInventory) GetByCabang(idCabang int) ([]*models.InventoryStokView, error) {
 	return s.repositoryInventory.GetByCabang(idCabang)
 }
 
-func (s *serviceInventory) Update(ID int, input *models.CreateInventoryDTO) (*models.Inventory, error) {
-	if err := validateBatas(input.BatasBawah, input.BatasAtas, input.Stok); err != nil {
+func (s *serviceInventory) AdjustStok(idCabang, idItem, delta int) (*models.Inventory, error) {
+	if err := s.ensureItemExists(idItem); err != nil {
 		return nil, err
 	}
-
-	existing, err := s.repositoryInventory.GetByID(ID)
-	if err != nil {
-		return nil, err
-	}
-	if existing == nil {
-		return nil, errors.New("inventory not found")
-	}
-
-	existing.IDCabang = input.IDCabang
-	existing.NamaItem = input.NamaItem
-	existing.BatasBawah = input.BatasBawah
-	existing.BatasAtas = input.BatasAtas
-	existing.Stok = input.Stok
-	existing.Satuan = input.Satuan
-	existing.UpdatedAt = nowWIB()
-
-	return s.repositoryInventory.Update(existing)
+	return s.repositoryInventory.AdjustStok(idItem, idCabang, delta, nowWIB())
 }
 
-func (s *serviceInventory) Delete(ID int) (*models.Inventory, error) {
-	inv, err := s.repositoryInventory.GetByID(ID)
-	if err != nil {
+func (s *serviceInventory) SetStok(idCabang, idItem, stok int) (*models.Inventory, error) {
+	if stok < 0 {
+		return nil, errors.New("stok cannot be negative")
+	}
+	if err := s.ensureItemExists(idItem); err != nil {
 		return nil, err
 	}
-	if inv == nil {
-		return nil, errors.New("inventory not found")
-	}
-	return s.repositoryInventory.Delete(ID)
+	return s.repositoryInventory.SetStok(idItem, idCabang, stok, nowWIB())
 }
 
-func (s *serviceInventory) AdjustStok(ID, delta int) (*models.Inventory, error) {
-	existing, err := s.repositoryInventory.GetByID(ID)
+func (s *serviceInventory) ensureItemExists(idItem int) error {
+	item, err := s.repositoryItem.GetByID(idItem)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if existing == nil {
-		return nil, errors.New("inventory not found")
+	if item == nil {
+		return errors.New("item not found")
 	}
-
-	affected, err := s.repositoryInventory.AdjustStok(ID, delta, nowWIB())
-	if err != nil {
-		return nil, err
-	}
-	if affected == 0 {
-		// item exists (checked above), so the change would make stok negative
-		return nil, errors.New("insufficient stock")
-	}
-
-	return s.repositoryInventory.GetByID(ID)
+	return nil
 }

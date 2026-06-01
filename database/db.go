@@ -126,16 +126,25 @@ func InitDb() (*sql.DB, error) {
 		FOREIGN KEY (id_cabang) REFERENCES cabang(id_cabang)
 	);
 
-	CREATE TABLE IF NOT EXISTS inventory (
-		id_inventory INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		id_cabang INT NOT NULL,
+	CREATE TABLE IF NOT EXISTS item (
+		id_item INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 		nama_item VARCHAR(255) NOT NULL,
+		satuan VARCHAR(50) NOT NULL,
 		batas_bawah INT NOT NULL DEFAULT 0,
 		batas_atas INT NOT NULL DEFAULT 0,
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL
+	);
+
+	CREATE TABLE IF NOT EXISTS inventory (
+		id_inventory INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		id_item INT NOT NULL,
+		id_cabang INT NOT NULL,
 		stok INT NOT NULL DEFAULT 0,
-		satuan VARCHAR(50) NOT NULL,
 		created_at DATETIME NOT NULL,
 		updated_at DATETIME NOT NULL,
+		UNIQUE KEY uq_item_cabang (id_item, id_cabang),
+		FOREIGN KEY (id_item) REFERENCES item(id_item),
 		FOREIGN KEY (id_cabang) REFERENCES cabang(id_cabang)
 	);
 	`

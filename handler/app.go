@@ -94,17 +94,25 @@ func StartApp() {
 	transaksi.GET("/:id", middleware.AuthMiddleware(authService, userService), transaksiHandler.GetTransaksiByID)
 	transaksi.DELETE("/:id_transaksi", middleware.AuthMiddleware(authService, userService), transaksiHandler.DeleteTransaksi)
 
+	itemRepository := repository.NewItemRepository(db)
+	itemService := service.NewItemService(itemRepository)
+	itemHandler := NewItemHandler(itemService)
+
+	item := router.Group("/item")
+	item.POST("/", middleware.AuthMiddleware(authService, userService), itemHandler.Create)
+	item.GET("/", middleware.AuthMiddleware(authService, userService), itemHandler.GetAll)
+	item.GET("/:id", middleware.AuthMiddleware(authService, userService), itemHandler.GetByID)
+	item.PUT("/:id", middleware.AuthMiddleware(authService, userService), itemHandler.Update)
+	item.DELETE("/:id", middleware.AuthMiddleware(authService, userService), itemHandler.Delete)
+
 	inventoryRepository := repository.NewInventoryRepository(db)
-	inventoryService := service.NewInventoryService(inventoryRepository)
+	inventoryService := service.NewInventoryService(inventoryRepository, itemRepository)
 	inventoryHandler := NewInventoryHandler(inventoryService)
 
 	inventory := router.Group("/inventory")
-	inventory.POST("/", middleware.AuthMiddleware(authService, userService), inventoryHandler.Create)
-	inventory.PUT("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.Update)
-	inventory.GET("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.GetByID)
 	inventory.GET("/cabang/:id_cabang", middleware.AuthMiddleware(authService, userService), inventoryHandler.GetByCabang)
-	inventory.DELETE("/:id", middleware.AuthMiddleware(authService, userService), inventoryHandler.Delete)
-	inventory.PATCH("/:id/stok", middleware.AuthMiddleware(authService, userService), inventoryHandler.AdjustStok)
+	inventory.PUT("/cabang/:id_cabang/item/:id_item", middleware.AuthMiddleware(authService, userService), inventoryHandler.SetStok)
+	inventory.PATCH("/cabang/:id_cabang/item/:id_item/stok", middleware.AuthMiddleware(authService, userService), inventoryHandler.AdjustStok)
 
 	port := os.Getenv("PORT")
 	if port == "" {
